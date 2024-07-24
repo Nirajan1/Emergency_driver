@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "716203522836",
+    "firebase_url": "https://emergencyseva-79d5b-default-rtdb.firebaseio.com",
+    "project_id": "emergencyseva-79d5b",
+    "storage_bucket": "emergencyseva-79d5b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:716203522836:android:c7c2b7d37601a3cba46001",
+        "android_client_info": {
+          "package_name": "com.emergency.seva"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv9_VOe25V-d0HuykeAkBEnInw0hSP2Dw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:716203522836:android:b955cc09597a4469a46001",
+        "android_client_info": {
+          "package_name": "com.raftarseva.driver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv9_VOe25V-d0HuykeAkBEnInw0hSP2Dw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
