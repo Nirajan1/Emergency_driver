@@ -1,4 +1,4 @@
-package com.emergency.seva
+package com.raftarseva.driver
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterFragmentActivity

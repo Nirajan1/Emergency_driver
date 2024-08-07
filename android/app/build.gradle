@@ -25,7 +25,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace 'com.emergency.seva'
+    namespace 'com.raftarseva.driver'
     compileSdkVersion 34
 
     compileOptions {
@@ -42,7 +42,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.emergency.seva"
+        applicationId "com.raftarseva.driver"
         minSdkVersion 24
         multiDexEnabled = true
         targetSdkVersion 34

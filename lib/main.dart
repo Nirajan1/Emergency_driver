@@ -93,19 +93,22 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   NotificationService notificationService = NotificationService();
 
   notificationInit() {
-    notificationService.initInfo().then((value) async {
-      String token = await NotificationService.getToken();
-      log(":::::::TOKEN:::::: $token");
-      if (currentUser != null) {
-        await FireStoreUtils.getCurrentUser(currentUser!.userID).then((value) {
-          if (value != null) {
-            currentUser = value;
-            currentUser!.fcmToken = token;
-            FireStoreUtils.updateCurrentUser(currentUser!);
-          }
-        });
-      }
-    });
+    notificationService.initInfo().then(
+      (value) async {
+        String token = await NotificationService.getToken();
+        log(":::::::TOKEN:::::: $token");
+        if (currentUser != null) {
+          await FireStoreUtils.getCurrentUser(currentUser!.userID)
+              .then((value) {
+            if (value != null) {
+              currentUser = value;
+              currentUser!.fcmToken = token;
+              FireStoreUtils.updateCurrentUser(currentUser!);
+            }
+          });
+        }
+      },
+    );
   }
 
   // Define an async function to initialize FlutterFire

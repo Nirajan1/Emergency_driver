@@ -50,10 +50,10 @@ class _SignUpState extends State<SignUpScreen> {
   TextEditingController _companyAddressController = TextEditingController();
 
   List<String> _locations = [
-    'Delivery service',
+    // 'Delivery service',
     'Cab service',
-    'Parcel service',
-    'Rental Service'
+    // 'Parcel service',
+    // 'Rental Service'
   ]; // Option 2
   String? _selectedServiceType;
 
