@@ -50,12 +50,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCAGh3yaLxwhYxsTvM7Jn6nAXk6AHZwaj0',
-    appId: '11:716203522836:web:b907381d8091f533a46001',
-    messagingSenderId: '716203522836',
-    projectId: 'emergencyseva-79d5b',
-    databaseURL: 'emergencyseva-79d5b',
-    storageBucket: 'emergencyseva-79d5b.appspot.com',
+    apiKey: 'AIzaSyBjDDyBTD1VslMfZC_jLOaw1iDxmnhYaZo',
+    appId: '1:381908173193:web:a1db2f4cd41401e1a6a158',
+    messagingSenderId: '381908173193',
+    projectId: 'emergency-seva',
+    databaseURL: 'https://emergency-seva-default-rtdb.firebaseio.com',
+    storageBucket: 'emergency-seva.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

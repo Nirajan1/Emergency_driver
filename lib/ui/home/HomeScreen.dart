@@ -271,7 +271,7 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _mapController!.dispose();
-    // FireStoreUtils().driverStreamController.close();
+    FireStoreUtils().driverStreamController.close();
     FireStoreUtils().driverStreamSub.cancel();
     FireStoreUtils().ordersStreamController.close();
     FireStoreUtils().ordersStreamSub.cancel();

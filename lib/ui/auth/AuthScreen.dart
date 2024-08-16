@@ -71,34 +71,34 @@ class AuthScreen extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(
-                right: 40.0, left: 40.0, top: 20, bottom: 20),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: double.infinity),
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.only(top: 12, bottom: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25.0),
-                    side: BorderSide(
-                      color: Color(COLOR_PRIMARY),
-                    ),
-                  ),
-                ),
-                child: Text(
-                  'Sign Up'.tr(),
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(COLOR_PRIMARY)),
-                ),
-                onPressed: () {
-                  push(context, SignUpScreen());
-                },
-              ),
-            ),
-          )
+          // Padding(
+          //   padding: const EdgeInsets.only(
+          //       right: 40.0, left: 40.0, top: 20, bottom: 20),
+          //   child: ConstrainedBox(
+          //     constraints: const BoxConstraints(minWidth: double.infinity),
+          //     child: TextButton(
+          //       style: TextButton.styleFrom(
+          //         padding: EdgeInsets.only(top: 12, bottom: 12),
+          //         shape: RoundedRectangleBorder(
+          //           borderRadius: BorderRadius.circular(25.0),
+          //           side: BorderSide(
+          //             color: Color(COLOR_PRIMARY),
+          //           ),
+          //         ),
+          //       ),
+          //       child: Text(
+          //         'Sign Up'.tr(),
+          //         style: TextStyle(
+          //             fontSize: 20,
+          //             fontWeight: FontWeight.bold,
+          //             color: Color(COLOR_PRIMARY)),
+          //       ),
+          //       onPressed: () {
+          //         push(context, SignUpScreen());
+          //       },
+          //     ),
+          //   ),
+          // )
         ],
       ),
     );

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:emartdriver/CabService/demopage.dart';
 import 'package:emartdriver/CabService/verify_otp_screen.dart';
 import 'package:emartdriver/constants.dart';
 import 'package:emartdriver/main.dart';
@@ -129,7 +130,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   Future<void> dispose() async {
     _mapController!.dispose();
-    // await FireStoreUtils().driverStreamController.close();
+    await FireStoreUtils().driverStreamController.close();
     FireStoreUtils().driverStreamSub.cancel();
 
     FireStoreUtils().cabOrdersStreamController.close();
@@ -235,8 +236,12 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     controller.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: LatLng(locationDataFinal!.latitude ?? 0.0,
-              locationDataFinal!.longitude ?? 0.0),
+          target: LatLng(
+            // locationDataFinal!.latitude ?? 0.0,
+            // locationDataFinal!.longitude ?? 0.0,
+            26.4525,
+            87.2718,
+          ),
           zoom: 14,
         ),
       ),
@@ -594,6 +599,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         List<LatLng> polylineCoordinates = [];
 
         PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+          googleApiKey: GOOGLE_API_KEY,
           request: PolylineRequest(
             origin: PointLatLng(_driverModel!.location.latitude,
                 _driverModel!.location.longitude),
@@ -640,6 +646,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         List<LatLng> polylineCoordinates = [];
 
         PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+          googleApiKey: GOOGLE_API_KEY,
           request: PolylineRequest(
             origin: PointLatLng(currentOrder!.sourceLocation.latitude,
                 currentOrder!.sourceLocation.longitude),
@@ -658,8 +665,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         _markers['Departure'] = Marker(
           markerId: const MarkerId('Departure'),
           infoWindow: const InfoWindow(title: "Departure"),
-          position: LatLng(currentOrder!.sourceLocation.latitude,
-              currentOrder!.sourceLocation.longitude),
+          position: LatLng(
+            currentOrder!.sourceLocation.latitude,
+            currentOrder!.sourceLocation.longitude,
+          ),
           icon: departureIcon!,
         );
         _markers.remove("Destination");
@@ -780,7 +789,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   getDriver() async {
     driverStream = FireStoreUtils().getDriver(MyAppState.currentUser!.userID);
     driverStream.listen((event) {
-      print("--->${event.location.latitude} ${event.location.longitude}");
+      print(
+          "driver location --->${event.location.latitude} ${event.location.longitude}");
       setState(() => _driverModel = event);
       setState(() => MyAppState.currentUser = _driverModel);
 
@@ -1246,6 +1256,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             if (currentOrder!.paymentStatus == true) {
                               completeOrder();
                             } else {
+                              // completeOrder();
                               final snack = SnackBar(
                                 content: Text(
                                   "Customer payment is pending.".tr(),
@@ -1364,29 +1375,49 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   }
 
   openChatWithCustomer() async {
-    await showProgress(context, "Please wait".tr(), false);
+    // Show the progress indicator
+    // await showProgress(context, "Please wait".tr(), false);
 
-    User? customer =
-        await FireStoreUtils.getCurrentUser(currentOrder!.authorID);
-    print(currentOrder!.driverID);
-    User? driver =
-        await FireStoreUtils.getCurrentUser(currentOrder!.driverID.toString());
+    try {
+      // Await the user fetch operations
+      User? customer =
+          await FireStoreUtils.getCurrentUser(currentOrder!.authorID);
+      User? driver = await FireStoreUtils.getCurrentUser(
+          currentOrder!.driverID.toString());
 
-    hideProgress();
-    push(
-        context,
-        ChatScreens(
-          type: "cab_parcel_chat",
-          customerName: customer!.firstName + " " + customer.lastName,
-          restaurantName: driver!.firstName + " " + driver.lastName,
-          orderId: currentOrder!.id,
-          restaurantId: driver.userID,
-          customerId: customer.userID,
-          customerProfileImage: customer.profilePictureURL,
-          restaurantProfileImage: driver.profilePictureURL,
-          token: customer.fcmToken,
-          chatType: 'Driver',
-        ));
+      // Check if both users are fetched successfully
+      if (customer != null && driver != null) {
+        // Allow time for the progress dialog to be visible
+        await Future.delayed(Duration(milliseconds: 100));
+
+        // Navigate to the chat screen
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ChatScreens(
+              type: "cab_parcel_chat",
+              customerName: "${customer.firstName} ${customer.lastName}",
+              restaurantName: "${driver.firstName} ${driver.lastName}",
+              orderId: currentOrder!.id,
+              restaurantId: driver.userID,
+              customerId: customer.userID,
+              customerProfileImage: customer.profilePictureURL,
+              restaurantProfileImage: driver.profilePictureURL,
+              token: customer.fcmToken,
+              chatType: 'Driver',
+            ),
+          ),
+        );
+      } else {
+        // Handle null user cases
+        print("Error: Customer or Driver not found.");
+      }
+    } catch (e) {
+      // Handle any errors
+      print("An error occurred: $e");
+    } finally {
+      // Ensure hideProgress is called
+      // await hideProgress();
+    }
   }
 
   goOnline(User user) async {

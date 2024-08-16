@@ -24,7 +24,8 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
   @override
   void initState() {
     super.initState();
-    ordersFuture = _fireStoreUtils.getCabDriverOrders(MyAppState.currentUser!.userID);
+    ordersFuture =
+        _fireStoreUtils.getCabDriverOrders(MyAppState.currentUser!.userID);
   }
 
   @override
@@ -51,7 +52,12 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
               );
             } else {
               ordersList = snapshot.data!;
-              return ListView.builder(itemCount: ordersList.length, padding: const EdgeInsets.all(12), itemBuilder: (context, index) => buildOrderItem(ordersList[index]));
+              return ListView.builder(
+                itemCount: ordersList.length,
+                padding: const EdgeInsets.all(12),
+                itemBuilder: (context, index) =>
+                    buildOrderItem(ordersList[index]),
+              );
             }
           }),
     );
@@ -91,7 +97,8 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
             child: Container(
               color: Colors.white,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
                 child: Column(
                   children: [
                     orderModel.driver != null
@@ -103,40 +110,55 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
                                   height: 50,
                                   width: 50,
                                   imageUrl: orderModel.author.profilePictureURL,
-                                  imageBuilder: (context, imageProvider) => Container(
+                                  imageBuilder: (context, imageProvider) =>
+                                      Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(10),
-                                      image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+                                      image: DecorationImage(
+                                          image: imageProvider,
+                                          fit: BoxFit.cover),
                                     ),
                                   ),
                                   placeholder: (context, url) => Center(
                                       child: CircularProgressIndicator.adaptive(
-                                    valueColor: AlwaysStoppedAnimation(Color(COLOR_PRIMARY)),
+                                    valueColor: AlwaysStoppedAnimation(
+                                        Color(COLOR_PRIMARY)),
                                   )),
-                                  errorWidget: (context, url, error) => ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Image.network(
-                                        placeholderImage,
-                                        fit: BoxFit.cover,
-                                      )),
+                                  errorWidget: (context, url, error) =>
+                                      ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: Image.network(
+                                            placeholderImage,
+                                            fit: BoxFit.cover,
+                                          )),
                                   fit: BoxFit.cover,
                                 ),
                                 Expanded(
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10.0),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text(
-                                              orderModel.author.firstName + " " + orderModel.author.lastName,
-                                              style: const TextStyle(fontSize: 18, color: Colors.black),
+                                              orderModel.author.firstName +
+                                                  " " +
+                                                  orderModel.author.lastName,
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  color: Colors.black),
                                             ),
                                             Text(
                                               totalAmount,
-                                              style: TextStyle(fontSize: 18, color: Color(COLOR_PRIMARY)),
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  color: Color(COLOR_PRIMARY)),
                                             ),
                                           ],
                                         ),
@@ -144,23 +166,39 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
                                           height: 6,
                                         ),
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
                                           children: [
                                             Text(
-                                              orderDate(orderModel.createdAt).trim(),
-                                              style: const TextStyle(color: Colors.black, fontSize: 14),
+                                              orderDate(orderModel.createdAt)
+                                                  .trim(),
+                                              style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 15.0),
                                               child: Container(
                                                 width: 7,
                                                 height: 7,
-                                                decoration: const BoxDecoration(color: Colors.grey, shape: BoxShape.circle),
+                                                decoration: const BoxDecoration(
+                                                    color: Colors.grey,
+                                                    shape: BoxShape.circle),
                                               ),
                                             ),
                                             Text(
-                                              orderModel.paymentStatus ? "Paid".tr() : "UnPaid".tr(),
-                                              style: TextStyle(fontSize: 15, color: orderModel.paymentStatus ? Colors.green : Colors.deepOrangeAccent),
+                                              orderModel.paymentStatus
+                                                  ? "Paid".tr()
+                                                  : "UnPaid".tr(),
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: orderModel
+                                                          .paymentStatus
+                                                      ? Colors.green
+                                                      : Colors
+                                                          .deepOrangeAccent),
                                             ),
                                           ],
                                         ),
@@ -191,7 +229,9 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
                                 Row(
                                   children: [
                                     Expanded(
-                                        child: Text(orderModel.sourceLocationName.toString(),
+                                        child: Text(
+                                            orderModel.sourceLocationName
+                                                .toString(),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
@@ -200,13 +240,16 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
                                   ],
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
                                   child: const Divider(),
                                 ),
                                 Row(
                                   children: [
                                     Expanded(
-                                        child: Text(orderModel.destinationLocationName.toString(),
+                                        child: Text(
+                                            orderModel.destinationLocationName
+                                                .toString(),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(

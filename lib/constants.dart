@@ -56,7 +56,8 @@ String senderId = '';
 String jsonNotificationFileURL = '';
 String GOOGLE_API_KEY = '';
 
-String placeholderImage = 'https://firebasestorage.googleapis.com/v0/b/emart-8d99f.appspot.com/o/images%2Fplace_holder%20(2).png?alt=media&token=c2eb35a9-ddf2-4b66-9cc6-d7d82e48d97b';
+String placeholderImage =
+    'https://firebasestorage.googleapis.com/v0/b/emart-8d99f.appspot.com/o/images%2Fplace_holder%20(2).png?alt=media&token=c2eb35a9-ddf2-4b66-9cc6-d7d82e48d97b';
 
 const ORDER_STATUS_PLACED = 'Order Placed';
 const ORDER_STATUS_ACCEPTED = 'Order Accepted';
@@ -90,7 +91,8 @@ const newCarBook = "new_car_book";
 
 const USER_ROLE_DRIVER = 'driver';
 
-const DEFAULT_CAR_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/emart-8d99f.appspot.com/o/images%2Fcar_default_image.png?alt=media&token=ba12a79d-d876-4b1c-87ed-2b06cd5b50f0';
+const DEFAULT_CAR_IMAGE =
+    'https://firebasestorage.googleapis.com/v0/b/emart-8d99f.appspot.com/o/images%2Fcar_default_image.png?alt=media&token=ba12a79d-d876-4b1c-87ed-2b06cd5b50f0';
 
 const Currency = 'currencies';
 
@@ -118,7 +120,9 @@ double calculateTax({String? amount, TaxModel? taxModel}) {
     if (taxModel.type == "fix") {
       taxAmount = double.parse(taxModel.tax.toString());
     } else {
-      taxAmount = (double.parse(amount.toString()) * double.parse(taxModel.tax!.toString())) / 100;
+      taxAmount = (double.parse(amount.toString()) *
+              double.parse(taxModel.tax!.toString())) /
+          100;
     }
   }
   return taxAmount;
@@ -127,15 +131,25 @@ double calculateTax({String? amount, TaxModel? taxModel}) {
 MailSettings? mailSettings;
 
 final smtpServer = SmtpServer(mailSettings!.host.toString(),
-    username: mailSettings!.userName.toString(), password: mailSettings!.password.toString(), port: 465, ignoreBadCertificate: false, ssl: true, allowInsecure: true);
+    username: mailSettings!.userName.toString(),
+    password: mailSettings!.password.toString(),
+    port: 465,
+    ignoreBadCertificate: false,
+    ssl: true,
+    allowInsecure: true);
 
-sendMail({String? subject, String? body, bool? isAdmin = false, List<dynamic>? recipients}) async {
+sendMail(
+    {String? subject,
+    String? body,
+    bool? isAdmin = false,
+    List<dynamic>? recipients}) async {
   // Create our message.
   if (isAdmin == true) {
     recipients!.add(mailSettings!.userName.toString());
   }
   final message = Message()
-    ..from = Address(mailSettings!.userName.toString(), mailSettings!.fromName.toString())
+    ..from = Address(
+        mailSettings!.userName.toString(), mailSettings!.fromName.toString())
     ..recipients = recipients!
     ..subject = subject
     ..text = body
