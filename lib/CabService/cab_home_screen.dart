@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:emartdriver/CabService/demopage.dart';
 import 'package:emartdriver/CabService/verify_otp_screen.dart';
 import 'package:emartdriver/constants.dart';
 import 'package:emartdriver/main.dart';
@@ -41,7 +40,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   BitmapDescriptor? departureIcon;
   BitmapDescriptor? destinationIcon;
   BitmapDescriptor? taxiIcon;
-
   Map<PolylineId, Polyline> polyLines = {};
   PolylinePoints polylinePoints = PolylinePoints();
   final Map<String, Marker> _markers = {};
@@ -71,6 +69,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   updateDriverOrder() async {
     await FireStoreUtils.getDriverOrderSetting();
+    print('update driver order');
     setState(() {});
     Timestamp startTimestamp = Timestamp.now();
     DateTime currentDate = startTimestamp.toDate();
@@ -87,7 +86,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         .where('createdAt', isGreaterThan: startTimestamp)
         .get()
         .then((value) async {
-          print('---->${value.docs.length}');
+          print('value docs length---->${value.docs.length}');
           await Future.forEach(value.docs,
               (QueryDocumentSnapshot<Map<String, dynamic>> element) {
             try {
@@ -100,7 +99,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
     orders.forEach((element) {
       CabOrderModel orderModel = element;
-      print('---->${orderModel.id}');
+      print('order model---->${orderModel.id}');
       orderModel.trigger_delevery = Timestamp.now();
       FirebaseFirestore.instance
           .collection(RIDESORDER)
@@ -118,9 +117,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   void initState() {
     super.initState();
     getDriver();
+    // startApiCallEvery2Seconds();
     setIcons();
     updateDriverOrder();
-    print('---->$enableOTPTripStart');
+    print('enableotptrip start---->$enableOTPTripStart');
     print('======>$driverOrderAcceptRejectDuration');
 
     _animationController = new AnimationController(
@@ -154,7 +154,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
             'met'
             'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]')
         : _mapController?.setMapStyle(null);
-
+    print(
+        '_driverModel!.ordercabRequestData ${_driverModel!.ordercabRequestData}');
+    print(
+        ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
     return Scaffold(
       key: _scaffoldKey,
       body: Column(
@@ -189,8 +192,12 @@ class _CabHomeScreenState extends State<CabHomeScreen>
               markers: _markers.values.toSet(),
               initialCameraPosition: CameraPosition(
                 zoom: 15,
-                target: LatLng(_driverModel!.location.latitude,
-                    _driverModel!.location.longitude),
+                target: LatLng(
+                  _driverModel!.location.latitude,
+                  _driverModel!.location.longitude,
+                  // 26.4525,
+                  // 87.2718,
+                ),
               ),
             ),
           ),
@@ -237,10 +244,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(
-            // locationDataFinal!.latitude ?? 0.0,
-            // locationDataFinal!.longitude ?? 0.0,
-            26.4525,
-            87.2718,
+            locationDataFinal!.latitude ?? 0.0,
+            locationDataFinal!.longitude ?? 0.0,
+            // 26.4525,
+            // 87.2718,
           ),
           zoom: 14,
         ),
@@ -255,6 +262,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
           'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]');
   }
 
+//? when order comes this is triggred
   Widget showDriverBottomSheet() {
     return Padding(
       padding: EdgeInsets.all(10),
@@ -362,6 +370,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
               ),
             ),
             SizedBox(height: 10),
+            // accept and reject ride
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -520,7 +529,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       "orderId": currentOrder!.id
     };
     await SendNotification.sendFcmMessage(
-        cabAccepted, orderModel.author.fcmToken, payLoad);
+      cabAccepted,
+      orderModel.author.fcmToken,
+      payLoad,
+    );
 
     setState(() {
       isShow = true;
@@ -665,10 +677,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         _markers['Departure'] = Marker(
           markerId: const MarkerId('Departure'),
           infoWindow: const InfoWindow(title: "Departure"),
-          position: LatLng(
-            currentOrder!.sourceLocation.latitude,
-            currentOrder!.sourceLocation.longitude,
-          ),
+          position: LatLng(currentOrder!.sourceLocation.latitude,
+              currentOrder!.sourceLocation.longitude),
           icon: departureIcon!,
         );
         _markers.remove("Destination");
@@ -694,7 +704,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         CameraPosition(
           target: source,
           zoom: 20,
-          bearing: double.parse(_driverModel!.rotation.toString()),
+          bearing: double.parse(
+            _driverModel!.rotation.toString(),
+          ),
         ),
       ),
     );
@@ -750,23 +762,13 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   late Stream<CabOrderModel?> ordersFuture;
   CabOrderModel? currentOrder;
-
-  late Stream<User> driverStream;
-  User? _driverModel = User();
-
-  getCurrentOrder() async {
-    ordersFuture = FireStoreUtils()
-        .getCabOrderByID(MyAppState.currentUser!.inProgressOrderID.toString());
-    ordersFuture.listen((event) {
-      print("------->${event!.status}");
-      setState(() {
-        currentOrder = event;
-        getDirections();
-      });
-    });
-  }
-
   Timer? _timer;
+  // void startApiCallEvery2Seconds() {
+  //   Timer.periodic(Duration(seconds: 2), (Timer timer) async {
+  //     // Call your API here
+  //     getDriver();
+  //   });
+  // }
 
   void startTimer(User _driverModel) {
     const oneSec = const Duration(seconds: 1);
@@ -786,15 +788,38 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     );
   }
 
+  late Stream<User> driverStream;
+  User? _driverModel = User();
+
+  getCurrentOrder() async {
+    print('get current order triggred');
+    ordersFuture = FireStoreUtils()
+        .getCabOrderByID(MyAppState.currentUser!.inProgressOrderID.toString());
+    ordersFuture.listen((event) {
+      print("current order------->${event!.status}");
+      setState(() {
+        currentOrder = event;
+        getDirections();
+      });
+    });
+  }
+
   getDriver() async {
     driverStream = FireStoreUtils().getDriver(MyAppState.currentUser!.userID);
     driverStream.listen((event) {
       print(
-          "driver location --->${event.location.latitude} ${event.location.longitude}");
-      setState(() => _driverModel = event);
-      setState(() => MyAppState.currentUser = _driverModel);
+          "get driver event--->${event.location.latitude} ${event.location.longitude}");
+      print('caborderRequest ${_driverModel!.ordercabRequestData != null}');
+      print('caborderRequest ${_driverModel!.ordercabRequestData}');
+      setState(
+        () => _driverModel = event,
+      );
+      setState(
+        () => MyAppState.currentUser = _driverModel,
+      );
 
       getDirections();
+      print('isActive ${_driverModel!.isActive}');
       if (_driverModel!.isActive) {
         if (_driverModel!.ordercabRequestData != null) {
           ////  showDriverBottomSheet(_driverModel!);
@@ -817,6 +842,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   }
 
   Widget buildOrderActionsCard({pedding = 10, width = 60}) {
+    print('order status ${currentOrder!.status}');
+    print('order status ${currentOrder!.paymentStatus}');
     bool isPickedUp = false;
     String? buttonText;
     if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
@@ -1253,10 +1280,11 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             reachedDestination();
                           } else if (currentOrder!.status ==
                               ORDER_REACHED_DESTINATION) {
+                            print('come back here');
                             if (currentOrder!.paymentStatus == true) {
+                              print('data');
                               completeOrder();
                             } else {
-                              // completeOrder();
                               final snack = SnackBar(
                                 content: Text(
                                   "Customer payment is pending.".tr(),
@@ -1321,9 +1349,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     setState(() {});
   }
 
+//? when order is compete
   completeOrder() async {
     showProgress(context, 'Completing Delivery...'.tr(), false);
-    currentOrder!.status = ORDER_STATUS_COMPLETED;
+    currentOrder!.status = ORDER_STATUS_COMPLETED; // Order Completed
     updateCabWalletAmount(currentOrder!);
     await FireStoreUtils.updateCabOrder(currentOrder!);
     Position? locationData = await getCurrentLocation();
@@ -1338,7 +1367,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       "orderId": currentOrder!.id
     };
     await SendNotification.sendFcmMessage(
-        cabCompleted, currentOrder!.author.fcmToken, payLoad);
+      cabCompleted,
+      currentOrder!.author.fcmToken,
+      payLoad,
+    );
     await FireStoreUtils.getCabFirstOrderOrNOt(currentOrder!)
         .then((value) async {
       if (value == true) {
@@ -1351,8 +1383,11 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _driverModel!.geoFireData = GeoFireData(
         geohash: GeoFlutterFire()
             .point(
-                latitude: locationData.latitude,
-                longitude: locationData.longitude)
+              // latitude: 26.4525,
+              // longitude: 87.2718,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+            )
             .hash,
         geoPoint: GeoPoint(locationData.latitude, locationData.longitude));
 
@@ -1366,7 +1401,12 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _mapController?.moveCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-            target: LatLng(locationData.latitude, locationData.longitude),
+            target: LatLng(
+              locationData.latitude,
+              locationData.longitude,
+              // 26.4525,
+              // 87.2718,
+            ),
             zoom: 15),
       ),
     );
@@ -1374,6 +1414,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     setState(() {});
   }
 
+//? message chat box is opened
   openChatWithCustomer() async {
     // Show the progress indicator
     // await showProgress(context, "Please wait".tr(), false);
@@ -1426,12 +1467,15 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     print('HomeScreenState.goOnline');
     user.isActive = true;
     user.location = UserLocation(
-        latitude: locationData.latitude, longitude: locationData.longitude);
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+    );
     user.geoFireData = GeoFireData(
         geohash: GeoFlutterFire()
             .point(
-                latitude: locationData.latitude,
-                longitude: locationData.longitude)
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+            )
             .hash,
         geoPoint: GeoPoint(locationData.latitude, locationData.longitude));
     MyAppState.currentUser = user;

@@ -50,15 +50,17 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
     //     _currentWidget = DriverCabListScreen();
     //   });
     // } else {
-    setState(() {
-      _drawerSelection = DrawerSelection.Home;
-      _appBarTitle = 'Home'.tr();
-      _currentWidget = CabHomeScreen(
-        refresh: () {
-          if (mounted) setState(() {});
-        },
-      );
-    });
+    setState(
+      () {
+        _drawerSelection = DrawerSelection.Home;
+        _appBarTitle = 'Home'.tr();
+        _currentWidget = CabHomeScreen(
+          refresh: () {
+            if (mounted) setState(() {});
+          },
+        );
+      },
+    );
     // }
     setCurrency();
     updateCurrentLocation();
@@ -108,7 +110,6 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
   updateCurrentLocation() async {
     PermissionStatus permissionStatus = await location.hasPermission();
     if (permissionStatus == PermissionStatus.granted) {
-      print("update current location---->");
       location.enableBackgroundMode(enable: true);
       location.changeSettings(
           accuracy: LocationAccuracy.navigation, distanceFilter: 3);
@@ -120,11 +121,12 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
           if (value != null) {
             User driverUserModel = value;
             if (driverUserModel.isActive == true) {
+              print("update current location---->");
               driverUserModel.location = UserLocation(
-                // latitude: locationData.latitude ?? 0.0,
-                // longitude: locationData.longitude ?? 0.0,
-                latitude: 26.4525,
-                longitude: 87.2718,
+                latitude: locationData.latitude ?? 0.0,
+                longitude: locationData.longitude ?? 0.0,
+                // latitude: 26.4525,
+                // longitude: 87.2718,
               );
               driverUserModel.rotation = locationData.heading;
               FireStoreUtils.updateCurrentUser(driverUserModel);
@@ -136,7 +138,6 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
       await openBackgroundLocationDialog();
       await location.requestPermission().then((permissionStatus) {
         if (permissionStatus == PermissionStatus.granted) {
-          print(" current  location---->");
           location.enableBackgroundMode(enable: true);
           location.changeSettings(
               accuracy: LocationAccuracy.navigation, distanceFilter: 3);
@@ -147,9 +148,13 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
               if (value != null) {
                 User driverUserModel = value;
                 if (driverUserModel.isActive == true) {
+                  print("else current  location---->");
                   driverUserModel.location = UserLocation(
-                      latitude: locationData.latitude ?? 0.0,
-                      longitude: locationData.longitude ?? 0.0);
+                    latitude: locationData.latitude ?? 0.0,
+                    longitude: locationData.longitude ?? 0.0,
+                    // latitude: 26.4525,
+                    // longitude: 87.2718,
+                  );
                   driverUserModel.rotation = locationData.heading;
                   FireStoreUtils.updateCurrentUser(driverUserModel);
                 }
@@ -163,61 +168,62 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
 
   openBackgroundLocationDialog() {
     return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(16.0))),
-            contentPadding: EdgeInsets.only(top: 10.0),
-            content: Container(
-              //width: 300.0,
-              width: MediaQuery.of(context).size.width * 0.6,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16.0))),
+          contentPadding: EdgeInsets.only(top: 10.0),
+          content: Container(
+            //width: 300.0,
+            width: MediaQuery.of(context).size.width * 0.6,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
+                  child: Text(
+                    "Background Location permission".tr(),
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
+                  child: Text(
+                      "This app collects location data to enable location fetching at the time of you are on the way to deliver order or even when the app is in background."
+                          .tr()),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(16.0),
+                          bottomRight: Radius.circular(16.0)),
+                    ),
                     child: Text(
-                      "Background Location permission".tr(),
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
+                      "Okay",
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
-                    child: Text(
-                        "This app collects location data to enable location fetching at the time of you are on the way to deliver order or even when the app is in background."
-                            .tr()),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(16.0),
-                            bottomRight: Radius.circular(16.0)),
-                      ),
-                      child: Text(
-                        "Okay",
-                        style: TextStyle(color: Colors.white),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   DateTime pre_backpress = DateTime.now();
@@ -264,8 +270,8 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  displayCircleImage(
-                                      user.profilePictureURL, 50, false),
+                                  // displayCircleImage(
+                                  //     user.profilePictureURL, 50, false),
                                   Padding(
                                     padding: const EdgeInsets.only(top: 8.0),
                                     child: Text(
@@ -305,8 +311,11 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                                           true) {
                                         updateCurrentLocation();
                                       }
+                                      print(
+                                          ' is active ${MyAppState.currentUser!.isActive}');
                                       FireStoreUtils.updateCurrentUser(
-                                          MyAppState.currentUser!);
+                                        MyAppState.currentUser!,
+                                      );
                                     },
                                   ),
                                 ],

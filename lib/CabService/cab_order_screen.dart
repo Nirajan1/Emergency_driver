@@ -29,6 +29,14 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
   }
 
   @override
+  void dispose() {
+    // Clean up any resources here
+
+    // Always call super.dispose() to ensure proper cleanup
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -90,10 +98,11 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
           padding: const EdgeInsets.all(8.0),
           child: GestureDetector(
             onTap: () => push(
-                context,
-                CabOrderDetailScreen(
-                  orderModel: orderModel,
-                )),
+              context,
+              CabOrderDetailScreen(
+                orderModel: orderModel,
+              ),
+            ),
             child: Container(
               color: Colors.white,
               child: Padding(
@@ -106,34 +115,34 @@ class _CabOrderScreenState extends State<CabOrderScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Row(
                               children: [
-                                CachedNetworkImage(
-                                  height: 50,
-                                  width: 50,
-                                  imageUrl: orderModel.author.profilePictureURL,
-                                  imageBuilder: (context, imageProvider) =>
-                                      Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      image: DecorationImage(
-                                          image: imageProvider,
-                                          fit: BoxFit.cover),
-                                    ),
-                                  ),
-                                  placeholder: (context, url) => Center(
-                                      child: CircularProgressIndicator.adaptive(
-                                    valueColor: AlwaysStoppedAnimation(
-                                        Color(COLOR_PRIMARY)),
-                                  )),
-                                  errorWidget: (context, url, error) =>
-                                      ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          child: Image.network(
-                                            placeholderImage,
-                                            fit: BoxFit.cover,
-                                          )),
-                                  fit: BoxFit.cover,
-                                ),
+                                // CachedNetworkImage(
+                                //   height: 50,
+                                //   width: 50,
+                                //   imageUrl: orderModel.author.profilePictureURL,
+                                //   imageBuilder: (context, imageProvider) =>
+                                //       Container(
+                                //     decoration: BoxDecoration(
+                                //       borderRadius: BorderRadius.circular(10),
+                                //       image: DecorationImage(
+                                //           image: imageProvider,
+                                //           fit: BoxFit.cover),
+                                //     ),
+                                //   ),
+                                //   placeholder: (context, url) => Center(
+                                //       child: CircularProgressIndicator.adaptive(
+                                //     valueColor: AlwaysStoppedAnimation(
+                                //         Color(COLOR_PRIMARY)),
+                                //   )),
+                                //   errorWidget: (context, url, error) =>
+                                //       ClipRRect(
+                                //           borderRadius:
+                                //               BorderRadius.circular(10),
+                                //           child: Image.network(
+                                //             placeholderImage,
+                                //             fit: BoxFit.cover,
+                                //           )),
+                                //   fit: BoxFit.cover,
+                                // ),
                                 Expanded(
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(

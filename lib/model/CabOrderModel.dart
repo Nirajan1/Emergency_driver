@@ -93,7 +93,9 @@ class CabOrderModel {
     }
 
     return CabOrderModel(
-      author: parsedJson.containsKey('author') ? User.fromJson(parsedJson['author']) : User(),
+      author: parsedJson.containsKey('author')
+          ? User.fromJson(parsedJson['author'])
+          : User(),
       authorID: parsedJson['authorID'] ?? '',
       createdAt: parsedJson['createdAt'] ?? Timestamp.now(),
       trigger_delevery: parsedJson['trigger_delevery'] ?? Timestamp.now(),
@@ -103,8 +105,11 @@ class CabOrderModel {
       discount: discountVal,
       couponCode: parsedJson['couponCode'] ?? '',
       couponId: parsedJson['couponId'] ?? '',
-      driver: parsedJson.containsKey('driver') ? User.fromJson(parsedJson['driver']) : null,
-      driverID: parsedJson.containsKey('driverID') ? parsedJson['driverID'] : null,
+      driver: parsedJson.containsKey('driver')
+          ? User.fromJson(parsedJson['driver'])
+          : null,
+      driverID:
+          parsedJson.containsKey('driverID') ? parsedJson['driverID'] : null,
       adminCommission: parsedJson["adminCommission"] ?? "",
       otpCode: parsedJson["otpCode"] ?? "",
       adminCommissionType: parsedJson["adminCommissionType"] ?? "",
@@ -114,14 +119,20 @@ class CabOrderModel {
       subTotal: parsedJson['subTotal'] ?? '0.0',
       sourceLocationName: parsedJson['sourceLocationName'] ?? '',
       destinationLocationName: parsedJson['destinationLocationName'] ?? '',
-      vehicleType: parsedJson.containsKey('vehicleType') ? VehicleType.fromJson(parsedJson['vehicleType']) : null,
+      vehicleType: parsedJson.containsKey('vehicleType')
+          ? VehicleType.fromJson(parsedJson['vehicleType'])
+          : null,
       vehicleId: parsedJson['vehicleId'] ?? '',
       distance: parsedJson['distance'] ?? 0,
       duration: parsedJson['duration'] ?? '',
       sectionId: parsedJson['sectionId'] ?? "",
       rejectedByDrivers: parsedJson["rejectedByDrivers"],
-      sourceLocation: parsedJson.containsKey('sourceLocation') ? UserLocationData.fromJson(parsedJson['sourceLocation']) : UserLocationData(),
-      destinationLocation: parsedJson.containsKey('destinationLocation') ? UserLocationData.fromJson(parsedJson['destinationLocation']) : UserLocationData(),
+      sourceLocation: parsedJson.containsKey('sourceLocation')
+          ? UserLocationData.fromJson(parsedJson['sourceLocation'])
+          : UserLocationData(),
+      destinationLocation: parsedJson.containsKey('destinationLocation')
+          ? UserLocationData.fromJson(parsedJson['destinationLocation'])
+          : UserLocationData(),
     );
   }
 
@@ -140,7 +151,8 @@ class CabOrderModel {
       'adminCommission': adminCommission,
       'adminCommissionType': adminCommissionType,
       "tip_amount": tipValue,
-      "taxSetting": taxModel != null ? taxModel!.map((v) => v.toJson()).toList() : null,
+      "taxSetting":
+          taxModel != null ? taxModel!.map((v) => v.toJson()).toList() : null,
       "sourceLocation": sourceLocation.toJson(),
       "destinationLocation": destinationLocation.toJson(),
       "vehicleType": vehicleType!.toJson(),
