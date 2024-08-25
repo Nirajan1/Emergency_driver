@@ -240,10 +240,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
               initialCameraPosition: CameraPosition(
                 zoom: 15,
                 target: LatLng(
-                  // _driverModel!.location.latitude,
-                  // _driverModel!.location.longitude,
-                  26.475551,
-                  87.276717,
+                  _driverModel!.location.latitude,
+                  _driverModel!.location.longitude,
+                  // 26.475551,
+                  // 87.276717,
                 ),
               ),
             ),
@@ -297,10 +297,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         CameraUpdate.newCameraPosition(
           CameraPosition(
             target: LatLng(
-              // locationDataFinal!.latitude ?? 0.0,
-              // locationDataFinal!.longitude ?? 0.0,
-              26.475551,
-              87.276717,
+              locationDataFinal!.latitude ?? 0.0,
+              locationDataFinal!.longitude ?? 0.0,
+              // 26.475551,
+              // 87.276717,
             ),
             zoom: 14,
           ),
@@ -1530,10 +1530,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _driverModel!.geoFireData = GeoFireData(
         geohash: GeoFlutterFire()
             .point(
-              latitude: 26.475551,
-              longitude: 87.276717,
-              // latitude: locationData.latitude,
-              // longitude: locationData.longitude,
+              // latitude: 26.475551,
+              // longitude: 87.276717,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
             )
             .hash,
         geoPoint: GeoPoint(locationData.latitude, locationData.longitude));
@@ -1549,10 +1549,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       CameraUpdate.newCameraPosition(
         CameraPosition(
             target: LatLng(
-              // locationData.latitude,
-              // locationData.longitude,
-              26.475551,
-              87.276717,
+              locationData.latitude,
+              locationData.longitude,
+              // 26.475551,
+              // 87.276717,
             ),
             zoom: 15),
       ),
@@ -1620,10 +1620,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     user.geoFireData = GeoFireData(
         geohash: GeoFlutterFire()
             .point(
-              // latitude: locationData.latitude,
-              // longitude: locationData.longitude,
-              latitude: 26.475551,
-              longitude: 87.276717,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude,
+              // latitude: 26.475551,
+              // longitude: 87.276717,
             )
             .hash,
         geoPoint: GeoPoint(locationData.latitude, locationData.longitude));
