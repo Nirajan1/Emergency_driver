@@ -380,15 +380,72 @@ class FireStoreUtils {
     }
   }
 
+  /////nirajan
+  static Future<CabOrderModel?> getRideData(String rideId) async {
+    // Reference to the 'rides' collection
+    CollectionReference ridesCollection =
+        FirebaseFirestore.instance.collection('rides');
+
+    // Fetch the document with the specific 'ride_id'
+    DocumentSnapshot rideSnapshot = await ridesCollection.doc(rideId).get();
+
+    if (rideSnapshot.exists) {
+      // Convert the document to a map and print the data
+      Map<String, dynamic> rideData =
+          rideSnapshot.data() as Map<String, dynamic>;
+
+      print('Ride Data: $rideData');
+      CabOrderModel newData = CabOrderModel.fromJson(rideData);
+      print('New distance is : ${newData.distance}');
+      return CabOrderModel.fromJson(rideData);
+    } else {
+      print('No ride found with ride_id: $rideId');
+      return null;
+    }
+  }
+
+  ///
+
   static Future<CabOrderModel?> getCabOrderByOrderId(String orderID) async {
     DocumentSnapshot<Map<String, dynamic>> userDocument =
         await firestore.collection(RIDESORDER).doc(orderID).get();
     if (userDocument.data() != null && userDocument.exists) {
+      print('Document data: ${userDocument}');
+
       return CabOrderModel.fromJson(userDocument.data()!);
     } else {
+      print('shivani: no data');
+
       return null;
     }
   }
+
+  // static Future<CabOrderModel?> getCabOrderByOrderId(String orderID) async {
+  //   try {
+  //     // Logging the start of the fetch operation
+  //     print('Fetching CabOrder with ID: $orderID');
+
+  //     DocumentSnapshot<Map<String, dynamic>> userDocument =
+  //         await FirebaseFirestore.instance
+  //             .collection('rides')
+  //             .doc(orderID)
+  //             .get();
+
+  //     if (userDocument.exists) {
+  //       // Log the fetched data
+  //       print('Document data: ${userDocument.data()}');
+  //       return CabOrderModel.fromJson(userDocument.data()!);
+  //     } else {
+  //       // Log if the document does not exist
+  //       print('No document found with ID: $orderID');
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     // Log any errors
+  //     print('Error fetching document: $e');
+  //     return null;
+  //   }
+  // }
 
   /*Future<List<CurrencyModel>> getCurrency() async {
     List<CurrencyModel> currency = [];
@@ -1670,6 +1727,7 @@ class FireStoreUtils {
         .listen((onData) async {
       if (onData.data() != null) {
         CabOrderModel? orderModel = CabOrderModel.fromJson(onData.data()!);
+        print("ordermodelll${orderModel}");
         cabOrdersStreamController.sink.add(orderModel);
       }
     });

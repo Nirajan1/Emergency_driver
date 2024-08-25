@@ -19,6 +19,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
 
 class CabHomeScreen extends StatefulWidget {
@@ -43,6 +44,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   Map<PolylineId, Polyline> polyLines = {};
   PolylinePoints polylinePoints = PolylinePoints();
   final Map<String, Marker> _markers = {};
+  CabOrderModel? newRidesData;
 
   setIcons() async {
     BitmapDescriptor.fromAssetImage(
@@ -112,10 +114,11 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   }
 
   AnimationController? _animationController;
-
+  var ridesId;
   @override
   void initState() {
     super.initState();
+
     getDriver();
     // startApiCallEvery2Seconds();
     setIcons();
@@ -126,6 +129,37 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _animationController = new AnimationController(
         vsync: this, duration: Duration(milliseconds: 700));
     _animationController!.repeat(reverse: true);
+    Future.delayed(const Duration(seconds: 3), () async {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      ridesId = await preferences.getString('inprogressId');
+      if (preferences.getString('inprogressId') == null) {
+        ridesId = null;
+      }
+      setState(() {});
+    });
+    // if (ridesId != null) {
+    //   print("shivani in ride calling");
+    //   getRidesInfo(ridesId);
+    // }
+  }
+
+  Future<void> getRidesInfo(String ridesId) async {
+    // First, perform the asynchronous operation.
+    newRidesData = await FireStoreUtils.getRideData(ridesId);
+    print("shivani in distance${newRidesData!.distance}");
+
+    // Then, call setState to update the widget state.
+    setState(() {
+      // Now you can safely update the state.
+      // newRidesData is already set, so no need for async/await here.
+    });
+  }
+
+  Future<void> deletereference() async {
+    SharedPreferences ref = await SharedPreferences.getInstance();
+    ref.remove("inprogressId");
+    ridesId = null;
+    setState(() {});
   }
 
   Future<void> dispose() async {
@@ -147,6 +181,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    // deletereference();
     isDarkMode(context)
         ? _mapController?.setMapStyle('[{"featureType": "all","'
             'elementType": "'
@@ -158,6 +193,24 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         '_driverModel!.ordercabRequestData ${_driverModel!.ordercabRequestData}');
     print(
         ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
+
+    print(
+        ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
+
+    // if (ridesId != null) {
+    // print("shivani in ride calling$ridesId");
+    // if (ridesId != null) {
+    //   // print("shivani in ride calling");
+    //   getRidesInfo(ridesId);
+    // }
+
+    //   getRidesInfo(ridesId);
+    // }
+    if (ridesId != null) {
+      print("shivani in ride calling${ridesId}");
+      getRidesInfo(ridesId);
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       body: Column(
@@ -206,9 +259,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   isShow == true
               ? buildOrderActionsCard()
               : Container(),
-          _driverModel!.ordercabRequestData != null
-              ? showDriverBottomSheet()
-              : Container()
+          ridesId != null ? showDriverBottomSheet() : Container()
         ],
       ),
       floatingActionButton: _driverModel!.ordercabRequestData != null ||
@@ -290,7 +341,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   ),
                 ),
                 Text(
-                  "${_driverModel!.ordercabRequestData!.distance.toString()} km",
+                  // "${_driverModel!.ordercabRequestData!.distance.toString()} km",
+                  "${newRidesData!.distance} km",
+
                   style: TextStyle(
                       color: Color(0xffFFFFFF),
                       fontFamily: "Poppinsm",
@@ -314,7 +367,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   ),
                 ),
                 Text(
-                  "${amountShow(amount: _driverModel!.ordercabRequestData!.subTotal.toString())}",
+                  "${newRidesData!.subTotal}",
                   style: TextStyle(
                       color: Color(0xffFFFFFF),
                       fontFamily: "Poppinsm",
@@ -341,7 +394,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         SizedBox(
                           width: 270,
                           child: Text(
-                            "${_driverModel!.ordercabRequestData!.sourceLocationName} ",
+                            // "${_driverModel!.ordercabRequestData!.sourceLocationName} ",
+                            // "souceLocation",
+                            "${newRidesData!.sourceLocationName}",
+
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -354,7 +410,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         SizedBox(
                           width: 270,
                           child: Text(
-                            "${_driverModel!.ordercabRequestData!.destinationLocationName}",
+                            // "${_driverModel!.ordercabRequestData!.destinationLocationName}",
+                            // "destinationLocation",
+                            "${newRidesData!.destinationLocationName}",
+
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -396,42 +455,78 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                           letterSpacing: 0.5),
                     ),
                     onPressed: () async {
-                      await FireStoreUtils.getCabOrderByOrderId(
-                              currentCabOrderID)
-                          .then((value) async {
-                        print("----->1111${value!.status}");
-                        if (value.status == ORDER_STATUS_REJECTED) {
-                          Navigator.pop(context);
+                      ///new
+                      if (newRidesData!.status == ORDER_STATUS_REJECTED) {
+                        print("----->11111s}");
+                        Navigator.pop(context);
 
-                          MyAppState.currentUser!.ordercabRequestData = null;
-                          MyAppState.currentUser!.inProgressOrderID = null;
-
-                          await FireStoreUtils.updateCurrentUser(
-                              MyAppState.currentUser!);
-                          final snack = SnackBar(
-                            content: Text(
-                              "This Ride is already reject by customer.".tr(),
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            duration: Duration(seconds: 2),
-                            backgroundColor: Colors.black,
-                          );
-                          ScaffoldMessenger.of(_scaffoldKey.currentContext!)
-                              .showSnackBar(snack);
-                          setState(() {});
-                        } else {
-                          //Navigator.pop(context);
-                          showProgress(
-                              context, "Rejecting Ride...".tr(), false);
-                          try {
-                            await rejectOrder();
-                            hideProgress();
-                          } catch (e) {
-                            hideProgress();
-                            print('HomeScreenState.showDriverBottomSheet $e');
-                          }
+                        MyAppState.currentUser!.ordercabRequestData = null;
+                        MyAppState.currentUser!.inProgressOrderID = null;
+                        deletereference();
+                        await FireStoreUtils.updateCurrentUser(
+                            MyAppState.currentUser!);
+                        final snack = SnackBar(
+                          content: Text(
+                            "This Ride is reject by customer.".tr(),
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          duration: Duration(seconds: 2),
+                          backgroundColor: Colors.black,
+                        );
+                        ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                            .showSnackBar(snack);
+                        setState(() {});
+                      } else {
+                        //Navigator.pop(context);
+                        showProgress(context, "Rejecting Ride...".tr(), false);
+                        try {
+                          await rejectOrder();
+                          hideProgress();
+                        } catch (e) {
+                          hideProgress();
+                          print('HomeScreenState.showDriverBottomSheet $e');
                         }
-                      });
+                      }
+
+                      ///end new
+
+                      // await FireStoreUtils.getCabOrderByOrderId(
+                      //         currentCabOrderID)
+                      //     .then((value) async {
+                      //   print("----->1111${value!.status}");
+                      //   if (value.status == ORDER_STATUS_REJECTED) {
+                      //     Navigator.pop(context);
+
+                      //     MyAppState.currentUser!.ordercabRequestData = null;
+                      //     MyAppState.currentUser!.inProgressOrderID = null;
+
+                      //     await FireStoreUtils.updateCurrentUser(
+                      //         MyAppState.currentUser!);
+                      //     final snack = SnackBar(
+                      //       content: Text(
+                      //         "This Ride is already reject by customer.".tr(),
+                      //         style: TextStyle(color: Colors.white),
+                      //       ),
+                      //       duration: Duration(seconds: 2),
+                      //       backgroundColor: Colors.black,
+                      //     );
+                      //     ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                      //         .showSnackBar(snack);
+                      //     setState(() {});
+                      //   }
+                      //else {
+                      //     //Navigator.pop(context);
+                      //     showProgress(
+                      //         context, "Rejecting Ride...".tr(), false);
+                      //     try {
+                      //       await rejectOrder();
+                      //       hideProgress();
+                      //     } catch (e) {
+                      //       hideProgress();
+                      //       print('HomeScreenState.showDriverBottomSheet $e');
+                      //     }
+                      //   }
+                      // });
                     },
                   ),
                 ),
@@ -457,45 +552,46 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             letterSpacing: 0.5),
                       ),
                       onPressed: () async {
-                        await FireStoreUtils.getCabOrderByOrderId(
-                                currentCabOrderID)
-                            .then((value) async {
-                          print("ACCEPT----->${value!.status}");
-                          if (value.status == ORDER_STATUS_REJECTED) {
-                            print("----->11111s}");
-                            Navigator.pop(context);
+                        if (newRidesData!.status == ORDER_STATUS_REJECTED) {
+                          print("----->11111s}");
+                          Navigator.pop(context);
 
-                            MyAppState.currentUser!.ordercabRequestData = null;
-                            MyAppState.currentUser!.inProgressOrderID = null;
-
-                            await FireStoreUtils.updateCurrentUser(
-                                MyAppState.currentUser!);
-                            final snack = SnackBar(
-                              content: Text(
-                                "This Ride is reject by customer.".tr(),
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              duration: Duration(seconds: 2),
-                              backgroundColor: Colors.black,
-                            );
-                            ScaffoldMessenger.of(_scaffoldKey.currentContext!)
-                                .showSnackBar(snack);
-                            setState(() {});
-                          } else {
-                            showProgress(
-                                context, 'Accepting Ride....'.tr(), false);
-                            try {
-                              if (_timer != null) {
-                                _timer!.cancel();
-                              }
-                              await acceptOrder();
-                              hideProgress();
-                            } catch (e) {
-                              hideProgress();
-                              print('HomeScreenState.showDriverBottomSheet $e');
+                          MyAppState.currentUser!.ordercabRequestData = null;
+                          MyAppState.currentUser!.inProgressOrderID = null;
+                          deletereference();
+                          await FireStoreUtils.updateCurrentUser(
+                              MyAppState.currentUser!);
+                          final snack = SnackBar(
+                            content: Text(
+                              "This Ride is reject by customer.".tr(),
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            duration: Duration(seconds: 2),
+                            backgroundColor: Colors.black,
+                          );
+                          ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                              .showSnackBar(snack);
+                          setState(() {});
+                        } else {
+                          showProgress(
+                              context, 'Accepting Ride....'.tr(), false);
+                          try {
+                            if (_timer != null) {
+                              _timer!.cancel();
                             }
+                            await acceptOrder();
+                            hideProgress();
+                          } catch (e) {
+                            hideProgress();
+                            print('HomeScreenState.showDriverBottomSheet $e');
                           }
-                        });
+                        }
+
+                        // await FireStoreUtils.getCabOrderByOrderId(
+                        //         currentCabOrderID)
+                        //     .then((value) async {
+                        //   print("ACCEPT----->${value!.status}");
+                        // });
                       }),
                 ),
               ],
@@ -507,21 +603,23 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   }
 
   acceptOrder() async {
-    CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
+    // CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
+    ridesId = null;
 
-    _driverModel!.ordercabRequestData = null;
-    _driverModel!.inProgressOrderID = orderModel.id;
+    // _driverModel!.ordercabRequestData = null;
+    _driverModel!.inProgressOrderID = newRidesData!.id;
+    print("in accept rocess : ${_driverModel!.inProgressOrderID}");
     await FireStoreUtils.updateCurrentUser(_driverModel!);
 
-    orderModel.status = ORDER_STATUS_DRIVER_ACCEPTED;
-    orderModel.driverID = _driverModel!.userID;
-    orderModel.driver = _driverModel!;
+    newRidesData!.status = ORDER_STATUS_DRIVER_ACCEPTED;
+    newRidesData!.driverID = _driverModel!.userID;
+    newRidesData!.driver = _driverModel!;
 
     if (enableOTPTripStart) {
-      orderModel.otpCode = (Random().nextInt(900000) + 100000).toString();
+      newRidesData!.otpCode = (Random().nextInt(900000) + 100000).toString();
     }
 
-    await FireStoreUtils.updateCabOrder(orderModel);
+    await FireStoreUtils.updateCabOrder(newRidesData!);
 
     await getCurrentOrder();
     Map<String, dynamic> payLoad = <String, dynamic>{
@@ -530,26 +628,42 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     };
     await SendNotification.sendFcmMessage(
       cabAccepted,
-      orderModel.author.fcmToken,
+      newRidesData!.author.fcmToken,
       payLoad,
     );
-
+    deletereference();
     setState(() {
       isShow = true;
     });
   }
 
+  // rejectOrder() async {
+  //   if (_timer != null) {
+  //     _timer!.cancel();
+  //   }
+  //   CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
+  //   if (orderModel.rejectedByDrivers == null) {
+  //     orderModel.rejectedByDrivers = [];
+  //   }
+  //   orderModel.rejectedByDrivers!.add(_driverModel!.userID);
+  //   orderModel.status = ORDER_STATUS_DRIVER_REJECTED;
+  //   await FireStoreUtils.updateCabOrder(orderModel);
+  //   _driverModel!.ordercabRequestData = null;
+  //   await FireStoreUtils.updateCurrentUser(_driverModel!);
+  // }
+
   rejectOrder() async {
+    ridesId = null;
     if (_timer != null) {
       _timer!.cancel();
     }
-    CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
-    if (orderModel.rejectedByDrivers == null) {
-      orderModel.rejectedByDrivers = [];
+    // CabOrderModel orderModel = _driverModel!.ordercabRequestData;
+    if (newRidesData!.rejectedByDrivers == null) {
+      newRidesData!.rejectedByDrivers = [];
     }
-    orderModel.rejectedByDrivers!.add(_driverModel!.userID);
-    orderModel.status = ORDER_STATUS_DRIVER_REJECTED;
-    await FireStoreUtils.updateCabOrder(orderModel);
+    newRidesData!.rejectedByDrivers!.add(_driverModel!.userID);
+    newRidesData!.status = ORDER_STATUS_DRIVER_REJECTED;
+    await FireStoreUtils.updateCabOrder(newRidesData!);
     _driverModel!.ordercabRequestData = null;
     await FireStoreUtils.updateCurrentUser(_driverModel!);
   }
@@ -793,24 +907,35 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   getCurrentOrder() async {
     print('get current order triggred');
+    // MyAppState.currentUser!.inProgressOrderID = ridesId;
     ordersFuture = FireStoreUtils()
         .getCabOrderByID(MyAppState.currentUser!.inProgressOrderID.toString());
+    // ordersFuture = FireStoreUtils().getCabOrderByID(ridesId);
+
     ordersFuture.listen((event) {
       print("current order------->${event!.status}");
       setState(() {
         currentOrder = event;
+        print('currentOrderis${currentOrder}');
+
         getDirections();
       });
     });
   }
 
   getDriver() async {
+    // SharedPreferences reference = await SharedPreferences.getInstance();
+    // var ridesId = await reference.getString("inprogressId");
+    // print("ridefinalidis$ridesId");
+
     driverStream = FireStoreUtils().getDriver(MyAppState.currentUser!.userID);
     driverStream.listen((event) {
       print(
           "get driver event--->${event.location.latitude} ${event.location.longitude}");
       print('caborderRequest ${_driverModel!.ordercabRequestData != null}');
       print('caborderRequest ${_driverModel!.ordercabRequestData}');
+      print('caborderRequestidd ${event.inProgressOrderID}');
+
       setState(
         () => _driverModel = event,
       );
@@ -830,6 +955,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       if (_driverModel!.inProgressOrderID != null) {
         getCurrentOrder();
       }
+      // if (ridesId != null) {
+      //   getCurrentOrder(ridesId);
+      // }
 
       if (_driverModel!.ordercabRequestData == null) {
         setState(() {
