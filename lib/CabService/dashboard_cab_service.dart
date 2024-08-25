@@ -121,12 +121,12 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
           if (value != null) {
             User driverUserModel = value;
             if (driverUserModel.isActive == true) {
-              print("update current location---->");
+              print("Update current location---->");
               driverUserModel.location = UserLocation(
-                latitude: locationData.latitude ?? 0.0,
-                longitude: locationData.longitude ?? 0.0,
-                // latitude: 26.4525,
-                // longitude: 87.2718,
+                // latitude: locationData.latitude ?? 0.0,
+                // longitude: locationData.longitude ?? 0.0,
+                latitude: 26.475551,
+                longitude: 87.276717,
               );
               driverUserModel.rotation = locationData.heading;
               FireStoreUtils.updateCurrentUser(driverUserModel);
