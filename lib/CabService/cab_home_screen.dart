@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:emartdriver/CabService/verify_otp_screen.dart';
 import 'package:emartdriver/constants.dart';
+import 'package:emartdriver/controller/notification_pref.dart';
 import 'package:emartdriver/main.dart';
 import 'package:emartdriver/model/CabOrderModel.dart';
 import 'package:emartdriver/model/User.dart';
@@ -18,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
@@ -34,6 +36,7 @@ class CabHomeScreen extends StatefulWidget {
 class _CabHomeScreenState extends State<CabHomeScreen>
     with SingleTickerProviderStateMixin {
   final fireStoreUtils = FireStoreUtils();
+  final CabHomeController cabHomecontroller = Get.put(CabHomeController());
 
   GoogleMapController? _mapController;
   bool canShowSheet = true;
@@ -44,7 +47,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   Map<PolylineId, Polyline> polyLines = {};
   PolylinePoints polylinePoints = PolylinePoints();
   final Map<String, Marker> _markers = {};
-  CabOrderModel? newRidesData;
+  // CabOrderModel? newRidesData;
 
   setIcons() async {
     BitmapDescriptor.fromAssetImage(
@@ -71,7 +74,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   updateDriverOrder() async {
     await FireStoreUtils.getDriverOrderSetting();
-    print('update driver order');
+    print('Update driver order');
     setState(() {});
     Timestamp startTimestamp = Timestamp.now();
     DateTime currentDate = startTimestamp.toDate();
@@ -114,13 +117,11 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   }
 
   AnimationController? _animationController;
-  var ridesId;
   @override
   void initState() {
     super.initState();
 
     getDriver();
-    // startApiCallEvery2Seconds();
     setIcons();
     updateDriverOrder();
     print('enableotptrip start---->$enableOTPTripStart');
@@ -129,36 +130,37 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _animationController = new AnimationController(
         vsync: this, duration: Duration(milliseconds: 700));
     _animationController!.repeat(reverse: true);
-    Future.delayed(const Duration(seconds: 3), () async {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      ridesId = await preferences.getString('inprogressId');
-      if (preferences.getString('inprogressId') == null) {
-        ridesId = null;
-      }
-      setState(() {});
-    });
-    // if (ridesId != null) {
-    //   print("shivani in ride calling");
-    //   getRidesInfo(ridesId);
-    // }
+
+    // Future.delayed(const Duration(seconds: 3), () async {
+    //   SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    //   if (preferences.getString('inprogressId') == null) {
+    //     ridesId.value = '';
+    //     print('inside if is called');
+    //   } else {
+    //     print('inside else is called');
+    //     ridesId.value = await preferences.getString('inprogressId').toString();
+    //   }
+    // });
   }
 
-  Future<void> getRidesInfo(String ridesId) async {
-    // First, perform the asynchronous operation.
-    newRidesData = await FireStoreUtils.getRideData(ridesId);
-    print("shivani in distance${newRidesData!.distance}");
+  // Future<void> getRidesInfo(String ridesId) async {
+  //   // First, perform the asynchronous operation.
+  //   print('newRidesData is called');
+  //   try {
+  //     cabHomecontroller.isLoading.value = true;
+  //     newRidesData = await FireStoreUtils.getRideData(ridesId);
+  //   } catch (exception) {
+  //     debugPrint('error in fetching getRidesInfo ${exception}');
+  //   } finally {
+  //     cabHomecontroller.isLoading.value = false;
+  //   }
+  // }
 
-    // Then, call setState to update the widget state.
-    setState(() {
-      // Now you can safely update the state.
-      // newRidesData is already set, so no need for async/await here.
-    });
-  }
-
-  Future<void> deletereference() async {
+  Future<void> deletePreference() async {
     SharedPreferences ref = await SharedPreferences.getInstance();
     ref.remove("inprogressId");
-    ridesId = null;
+    cabHomecontroller.ridesId.value = '';
     setState(() {});
   }
 
@@ -182,6 +184,12 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   @override
   Widget build(BuildContext context) {
     // deletereference();
+    // if (cabHomecontroller.ridesId.value.isNotEmpty) {
+    //   getRidesInfo(cabHomecontroller.ridesId.value);
+    // } else {
+    //   print('cabHomeContoller rides Id is empty');
+    // }
+
     isDarkMode(context)
         ? _mapController?.setMapStyle('[{"featureType": "all","'
             'elementType": "'
@@ -189,27 +197,13 @@ class _CabHomeScreenState extends State<CabHomeScreen>
             'met'
             'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]')
         : _mapController?.setMapStyle(null);
-    print(
-        '_driverModel!.ordercabRequestData ${_driverModel!.ordercabRequestData}');
-    print(
-        ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
+    // print(
+    //     '_driverModel!.ordercabRequestData ${_driverModel!.ordercabRequestData}');
+    // print(
+    //     ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
 
-    print(
-        ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
-
-    // if (ridesId != null) {
-    // print("shivani in ride calling$ridesId");
-    // if (ridesId != null) {
-    //   // print("shivani in ride calling");
-    //   getRidesInfo(ridesId);
-    // }
-
-    //   getRidesInfo(ridesId);
-    // }
-    if (ridesId != null) {
-      print("shivani in ride calling${ridesId}");
-      getRidesInfo(ridesId);
-    }
+    // print(
+    //     ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
 
     return Scaffold(
       key: _scaffoldKey,
@@ -226,7 +220,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                      "${"You have to minimum ".tr()}${amountShow(amount: minimumDepositToRideAccept.toString())} ${"wallet amount to receiving Order".tr()}",
+                      "${"You have to minimum "}${amountShow(amount: minimumDepositToRideAccept.toString())} ${"wallet amount to receiving Order"}",
                       style: TextStyle(color: Colors.white),
                       textAlign: TextAlign.center),
                 ),
@@ -246,10 +240,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
               initialCameraPosition: CameraPosition(
                 zoom: 15,
                 target: LatLng(
-                  _driverModel!.location.latitude,
-                  _driverModel!.location.longitude,
-                  // 26.4525,
-                  // 87.2718,
+                  // _driverModel!.location.latitude,
+                  // _driverModel!.location.longitude,
+                  26.475551,
+                  87.276717,
                 ),
               ),
             ),
@@ -259,7 +253,14 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   isShow == true
               ? buildOrderActionsCard()
               : Container(),
-          ridesId != null ? showDriverBottomSheet() : Container()
+          // ridesId != null ? showDriverBottomSheet() : Container()
+          Obx(
+            () => cabHomecontroller.isLoading.value == true
+                ? CircularProgressIndicator.adaptive()
+                : cabHomecontroller.ridesId.value.isNotEmpty
+                    ? showDriverBottomSheet()
+                    : Container(),
+          )
         ],
       ),
       floatingActionButton: _driverModel!.ordercabRequestData != null ||
@@ -291,19 +292,46 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    controller.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(
-            locationDataFinal!.latitude ?? 0.0,
-            locationDataFinal!.longitude ?? 0.0,
-            // 26.4525,
-            // 87.2718,
+    if (locationDataFinal != null) {
+      controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(
+              // locationDataFinal!.latitude ?? 0.0,
+              // locationDataFinal!.longitude ?? 0.0,
+              26.475551,
+              87.276717,
+            ),
+            zoom: 14,
           ),
-          zoom: 14,
         ),
-      ),
-    );
+      );
+    } else {
+      // Handle the case where locationDataFinal is null
+      print("locationDataFinal is null");
+      // You can set a default position or show an error message
+      controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(0.0, 0.0), // Default to a neutral location
+            zoom: 14,
+          ),
+        ),
+      );
+    }
+    // controller.animateCamera(
+    //   CameraUpdate.newCameraPosition(
+    //     CameraPosition(
+    //       target: LatLng(
+    //         locationDataFinal!.latitude ?? 0.0,
+    //         locationDataFinal!.longitude ?? 0.0,
+    //         // 26.4525,
+    //         // 87.2718,
+    //       ),
+    //       zoom: 14,
+    //     ),
+    //   ),
+    // );
     setState(() {});
     if (isDarkMode(context))
       _mapController?.setMapStyle('[{"featureType": "all","'
@@ -333,7 +361,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
               children: [
                 Expanded(
                   child: Text(
-                    "Trip Distance".tr(),
+                    "Trip Distance",
                     style: TextStyle(
                         color: Color(0xffADADAD),
                         fontFamily: "Poppinsr",
@@ -341,9 +369,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   ),
                 ),
                 Text(
-                  // "${_driverModel!.ordercabRequestData!.distance.toString()} km",
-                  "${newRidesData!.distance} km",
-
+                  "${cabHomecontroller.newRidesData!.distance} km",
                   style: TextStyle(
                       color: Color(0xffFFFFFF),
                       fontFamily: "Poppinsm",
@@ -359,7 +385,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
               children: [
                 Expanded(
                   child: Text(
-                    "Delivery charge".tr(),
+                    "Delivery charge",
                     style: TextStyle(
                         color: Color(0xffADADAD),
                         fontFamily: "Poppinsr",
@@ -367,7 +393,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   ),
                 ),
                 Text(
-                  "${newRidesData!.subTotal}",
+                  "${cabHomecontroller.newRidesData!.subTotal}",
                   style: TextStyle(
                       color: Color(0xffFFFFFF),
                       fontFamily: "Poppinsm",
@@ -396,7 +422,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                           child: Text(
                             // "${_driverModel!.ordercabRequestData!.sourceLocationName} ",
                             // "souceLocation",
-                            "${newRidesData!.sourceLocationName}",
+                            "${cabHomecontroller.newRidesData!.sourceLocationName}",
 
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -410,10 +436,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         SizedBox(
                           width: 270,
                           child: Text(
-                            // "${_driverModel!.ordercabRequestData!.destinationLocationName}",
-                            // "destinationLocation",
-                            "${newRidesData!.destinationLocationName}",
-
+                            "${cabHomecontroller.newRidesData!.destinationLocationName}",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -456,18 +479,19 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                     ),
                     onPressed: () async {
                       ///new
-                      if (newRidesData!.status == ORDER_STATUS_REJECTED) {
+                      if (cabHomecontroller.newRidesData!.status ==
+                          ORDER_STATUS_REJECTED) {
                         print("----->11111s}");
                         Navigator.pop(context);
 
                         MyAppState.currentUser!.ordercabRequestData = null;
                         MyAppState.currentUser!.inProgressOrderID = null;
-                        deletereference();
+                        deletePreference();
                         await FireStoreUtils.updateCurrentUser(
                             MyAppState.currentUser!);
                         final snack = SnackBar(
                           content: Text(
-                            "This Ride is reject by customer.".tr(),
+                            "This Ride is reject by customer.",
                             style: TextStyle(color: Colors.white),
                           ),
                           duration: Duration(seconds: 2),
@@ -478,7 +502,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         setState(() {});
                       } else {
                         //Navigator.pop(context);
-                        showProgress(context, "Rejecting Ride...".tr(), false);
+                        showProgress(context, "Rejecting Ride...", false);
                         try {
                           await rejectOrder();
                           hideProgress();
@@ -545,25 +569,26 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         ),
                       ),
                       child: Text(
-                        'Accept'.tr(),
+                        'Accept',
                         style: TextStyle(
                             color: Color(0xffFFFFFF),
                             fontFamily: "Poppinsm",
                             letterSpacing: 0.5),
                       ),
                       onPressed: () async {
-                        if (newRidesData!.status == ORDER_STATUS_REJECTED) {
+                        if (cabHomecontroller.newRidesData!.status ==
+                            ORDER_STATUS_REJECTED) {
                           print("----->11111s}");
                           Navigator.pop(context);
 
                           MyAppState.currentUser!.ordercabRequestData = null;
                           MyAppState.currentUser!.inProgressOrderID = null;
-                          deletereference();
+                          deletePreference();
                           await FireStoreUtils.updateCurrentUser(
                               MyAppState.currentUser!);
                           final snack = SnackBar(
                             content: Text(
-                              "This Ride is reject by customer.".tr(),
+                              "This Ride is reject by customer.",
                               style: TextStyle(color: Colors.white),
                             ),
                             duration: Duration(seconds: 2),
@@ -573,8 +598,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               .showSnackBar(snack);
                           setState(() {});
                         } else {
-                          showProgress(
-                              context, 'Accepting Ride....'.tr(), false);
+                          showProgress(context, 'Accepting Ride....', false);
                           try {
                             if (_timer != null) {
                               _timer!.cancel();
@@ -604,22 +628,23 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   acceptOrder() async {
     // CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
-    ridesId = null;
+    cabHomecontroller.ridesId.value = '';
 
     // _driverModel!.ordercabRequestData = null;
-    _driverModel!.inProgressOrderID = newRidesData!.id;
+    _driverModel!.inProgressOrderID = cabHomecontroller.newRidesData!.id;
     print("in accept rocess : ${_driverModel!.inProgressOrderID}");
     await FireStoreUtils.updateCurrentUser(_driverModel!);
 
-    newRidesData!.status = ORDER_STATUS_DRIVER_ACCEPTED;
-    newRidesData!.driverID = _driverModel!.userID;
-    newRidesData!.driver = _driverModel!;
+    cabHomecontroller.newRidesData!.status = ORDER_STATUS_DRIVER_ACCEPTED;
+    cabHomecontroller.newRidesData!.driverID = _driverModel!.userID;
+    cabHomecontroller.newRidesData!.driver = _driverModel!;
 
     if (enableOTPTripStart) {
-      newRidesData!.otpCode = (Random().nextInt(900000) + 100000).toString();
+      cabHomecontroller.newRidesData!.otpCode =
+          (Random().nextInt(900000) + 100000).toString();
     }
 
-    await FireStoreUtils.updateCabOrder(newRidesData!);
+    await FireStoreUtils.updateCabOrder(cabHomecontroller.newRidesData!);
 
     await getCurrentOrder();
     Map<String, dynamic> payLoad = <String, dynamic>{
@@ -628,10 +653,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     };
     await SendNotification.sendFcmMessage(
       cabAccepted,
-      newRidesData!.author.fcmToken,
+      cabHomecontroller.newRidesData!.author.fcmToken,
       payLoad,
     );
-    deletereference();
+    deletePreference();
     setState(() {
       isShow = true;
     });
@@ -653,18 +678,20 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   // }
 
   rejectOrder() async {
-    ridesId = null;
+    cabHomecontroller.ridesId.value = '';
     if (_timer != null) {
       _timer!.cancel();
     }
     // CabOrderModel orderModel = _driverModel!.ordercabRequestData;
-    if (newRidesData!.rejectedByDrivers == null) {
-      newRidesData!.rejectedByDrivers = [];
+    if (cabHomecontroller.newRidesData!.rejectedByDrivers == null) {
+      cabHomecontroller.newRidesData!.rejectedByDrivers = [];
     }
-    newRidesData!.rejectedByDrivers!.add(_driverModel!.userID);
-    newRidesData!.status = ORDER_STATUS_DRIVER_REJECTED;
-    await FireStoreUtils.updateCabOrder(newRidesData!);
+    cabHomecontroller.newRidesData!.rejectedByDrivers!
+        .add(_driverModel!.userID);
+    cabHomecontroller.newRidesData!.status = ORDER_STATUS_DRIVER_REJECTED;
+    await FireStoreUtils.updateCabOrder(cabHomecontroller.newRidesData!);
     _driverModel!.ordercabRequestData = null;
+    deletePreference();
     await FireStoreUtils.updateCurrentUser(_driverModel!);
   }
 
@@ -855,7 +882,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     LatLngBounds l2 = await mapController.getVisibleRegion();
 
     if (l1.southwest.latitude == -90 || l2.southwest.latitude == -90) {
-      return checkCameraLocation(cameraUpdate, mapController);
+      return checkCameraLocation(
+        cameraUpdate,
+        mapController,
+      );
     }
   }
 
@@ -877,13 +907,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   late Stream<CabOrderModel?> ordersFuture;
   CabOrderModel? currentOrder;
   Timer? _timer;
-  // void startApiCallEvery2Seconds() {
-  //   Timer.periodic(Duration(seconds: 2), (Timer timer) async {
-  //     // Call your API here
-  //     getDriver();
-  //   });
-  // }
-
   void startTimer(User _driverModel) {
     const oneSec = const Duration(seconds: 1);
     _timer = new Timer.periodic(
@@ -955,9 +978,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       if (_driverModel!.inProgressOrderID != null) {
         getCurrentOrder();
       }
-      // if (ridesId != null) {
-      //   getCurrentOrder(ridesId);
-      // }
 
       if (_driverModel!.ordercabRequestData == null) {
         setState(() {
@@ -976,16 +996,15 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     String? buttonText;
     if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
         currentOrder!.status == ORDER_STATUS_DRIVER_ACCEPTED) {
-      buttonText = enableOTPTripStart
-          ? "Verify Code to customer".tr()
-          : "Pickup Customer".tr();
+      buttonText =
+          enableOTPTripStart ? "Verify Code to customer" : "Pickup Customer";
       isPickedUp = true;
     } else if (currentOrder!.status == ORDER_STATUS_IN_TRANSIT) {
       // buttonText = 'Complete Pick Up'.tr();
-      buttonText = "Reached To destination".tr();
+      buttonText = "Reached To destination";
       isPickedUp = false;
     } else if (currentOrder!.status == ORDER_REACHED_DESTINATION) {
-      buttonText = "Complete Ride".tr();
+      buttonText = "Complete Ride";
       isPickedUp = false;
     }
     return Container(
@@ -1013,7 +1032,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                     title: Row(
                       children: [
                         Text(
-                          "ORDER ID ".tr(),
+                          "ORDER ID ",
                           style: TextStyle(
                               fontSize: 14,
                               color: isDarkMode(context)
@@ -1076,7 +1095,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             //   width: 14,
                             // ),
                             label: Text(
-                              "Message".tr(),
+                              "Message",
                               style: TextStyle(
                                   color: Color(0xff3DAE7D),
                                   fontFamily: "Poppinsm",
@@ -1108,7 +1127,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         Padding(
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
-                            'ORDER ID '.tr(),
+                            'ORDER ID ',
                             style: TextStyle(
                                 color: Color(0xff555555),
                                 fontSize: 12,
@@ -1160,7 +1179,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               width: 14,
                             ),
                             label: Text(
-                              "CALL".tr(),
+                              "CALL",
                               style: TextStyle(
                                   color: Color(0xff3DAE7D),
                                   fontFamily: "Poppinsm",
@@ -1197,7 +1216,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         Padding(
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
-                            "ORDER ID ".tr(),
+                            "ORDER ID ",
                             style: TextStyle(
                                 color: Color(0xff555555),
                                 fontSize: 12,
@@ -1249,7 +1268,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               width: 14,
                             ),
                             label: Text(
-                              "CALL".tr(),
+                              "CALL",
                               style: TextStyle(
                                   color: Color(0xff3DAE7D),
                                   fontFamily: "Poppinsm",
@@ -1266,7 +1285,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       color: Color(COLOR_PRIMARY),
                     ),
                     title: Text(
-                      'Destination'.tr(),
+                      'Destination',
                       style: TextStyle(
                           color: Color(0xff9091A4),
                           fontFamily: "Poppinsr",
@@ -1312,7 +1331,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             //   width: 14,
                             // ),
                             label: Text(
-                              "Message".tr(),
+                              "Message",
                               style: TextStyle(
                                   color: Color(0xff3DAE7D),
                                   fontFamily: "Poppinsm",
@@ -1361,7 +1380,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               } else {
                                 final snack = SnackBar(
                                   content: Text(
-                                    "Customer payment is pending.".tr(),
+                                    "Customer payment is pending.",
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   duration: Duration(seconds: 2),
@@ -1415,7 +1434,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             } else {
                               final snack = SnackBar(
                                 content: Text(
-                                  "Customer payment is pending.".tr(),
+                                  "Customer payment is pending.",
                                   style: TextStyle(color: Colors.white),
                                 ),
                                 duration: Duration(seconds: 2),
@@ -1450,7 +1469,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       if (isComplete != null) {
         if (isComplete == true) {
           print('HomeScreenState.completePickUp');
-          //showProgress(context, "Updating Ride...".tr(), false);
+          //showProgress(context, "Updating Ride...", false);
           currentOrder!.status = ORDER_STATUS_IN_TRANSIT;
           await FireStoreUtils.updateCabOrder(currentOrder!);
 
@@ -1460,7 +1479,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       }
     } else {
       print('HomeScreenState.completePickUp');
-      showProgress(context, 'Updating Ride...'.tr(), false);
+      showProgress(context, 'Updating Ride...', false);
       currentOrder!.status = ORDER_STATUS_IN_TRANSIT;
       await FireStoreUtils.updateCabOrder(currentOrder!);
 
@@ -1470,7 +1489,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   }
 
   reachedDestination() async {
-    showProgress(context, "Ride update...".tr(), false);
+    showProgress(context, "Ride update...", false);
     currentOrder!.status = ORDER_REACHED_DESTINATION;
     await FireStoreUtils.updateCabOrder(currentOrder!);
     hideProgress();
@@ -1479,7 +1498,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
 //? when order is compete
   completeOrder() async {
-    showProgress(context, 'Completing Delivery...'.tr(), false);
+    showProgress(context, 'Completing Delivery...', false);
     currentOrder!.status = ORDER_STATUS_COMPLETED; // Order Completed
     updateCabWalletAmount(currentOrder!);
     await FireStoreUtils.updateCabOrder(currentOrder!);
@@ -1511,10 +1530,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _driverModel!.geoFireData = GeoFireData(
         geohash: GeoFlutterFire()
             .point(
-              // latitude: 26.4525,
-              // longitude: 87.2718,
-              latitude: locationData.latitude,
-              longitude: locationData.longitude,
+              latitude: 26.475551,
+              longitude: 87.276717,
+              // latitude: locationData.latitude,
+              // longitude: locationData.longitude,
             )
             .hash,
         geoPoint: GeoPoint(locationData.latitude, locationData.longitude));
@@ -1530,10 +1549,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       CameraUpdate.newCameraPosition(
         CameraPosition(
             target: LatLng(
-              locationData.latitude,
-              locationData.longitude,
-              // 26.4525,
-              // 87.2718,
+              // locationData.latitude,
+              // locationData.longitude,
+              26.475551,
+              87.276717,
             ),
             zoom: 15),
       ),
@@ -1590,7 +1609,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   }
 
   goOnline(User user) async {
-    await showProgress(context, 'Going online...'.tr(), false);
+    await showProgress(context, 'Going online...', false);
     Position locationData = await getCurrentLocation();
     print('HomeScreenState.goOnline');
     user.isActive = true;
@@ -1601,8 +1620,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     user.geoFireData = GeoFireData(
         geohash: GeoFlutterFire()
             .point(
-              latitude: locationData.latitude,
-              longitude: locationData.longitude,
+              // latitude: locationData.latitude,
+              // longitude: locationData.longitude,
+              latitude: 26.475551,
+              longitude: 87.276717,
             )
             .hash,
         geoPoint: GeoPoint(locationData.latitude, locationData.longitude));
