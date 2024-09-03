@@ -251,348 +251,356 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
           return true; // true will exit the app
         }
       },
-      child: ChangeNotifierProvider.value(
-        value: MyAppState.currentUser,
-        child: Consumer<User>(
-          builder: (context, user1, _) {
-            return Scaffold(
-              drawer: Drawer(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: ListView(
-                        padding: EdgeInsets.zero,
-                        children: [
-                          Consumer<User>(builder: (context, user, _) {
-                            return DrawerHeader(
-                              margin: EdgeInsets.all(0.0),
-                              padding: EdgeInsets.only(left: 10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  // displayCircleImage(
-                                  //     user.profilePictureURL, 50, false),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Text(
-                                      user.fullName(),
+      child: SafeArea(
+        child: ChangeNotifierProvider.value(
+          value: MyAppState.currentUser,
+          child: Consumer<User>(
+            builder: (context, user1, _) {
+              return Scaffold(
+                drawer: Drawer(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          padding: EdgeInsets.zero,
+                          children: [
+                            Consumer<User>(builder: (context, user, _) {
+                              return DrawerHeader(
+                                margin: EdgeInsets.all(0.0),
+                                padding: EdgeInsets.only(left: 10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    displayCircleImage(
+                                      user.profilePictureURL,
+                                      50,
+                                      false,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Text(
+                                        user.fullName(),
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    Text(
+                                      user.email,
                                       style: TextStyle(color: Colors.white),
                                     ),
-                                  ),
-                                  Text(
-                                    user.email,
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  // Padding(
-                                  //     padding: const EdgeInsets.only(top: 4.0),
-                                  //     child: Text(
-                                  //       user.isCompany
-                                  //           ? "Company Owner".tr() + " - ${user.companyName}"
-                                  //           : user.companyId.isNotEmpty
-                                  //               ? "Company Driver".tr() + " - ${user.companyName}"
-                                  //               : "As a Individual".tr(),
-                                  //       style: TextStyle(color: Colors.white),
-                                  //     )),
-                                  SwitchListTile(
-                                    visualDensity: VisualDensity(
-                                        horizontal: 0, vertical: -4),
-                                    contentPadding: EdgeInsets.zero,
-                                    title: Text(
-                                      "Online".tr(),
-                                      style: TextStyle(color: Colors.white),
+                                    // Padding(
+                                    //     padding: const EdgeInsets.only(top: 4.0),
+                                    //     child: Text(
+                                    //       user.isCompany
+                                    //           ? "Company Owner".tr() + " - ${user.companyName}"
+                                    //           : user.companyId.isNotEmpty
+                                    //               ? "Company Driver".tr() + " - ${user.companyName}"
+                                    //               : "As a Individual".tr(),
+                                    //       style: TextStyle(color: Colors.white),
+                                    //     )),
+                                    SwitchListTile(
+                                      visualDensity: VisualDensity(
+                                          horizontal: 0, vertical: -4),
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(
+                                        "Online".tr(),
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      value: MyAppState.currentUser!.isActive,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          MyAppState.currentUser!.isActive =
+                                              value;
+                                        });
+                                        if (MyAppState.currentUser!.isActive ==
+                                            true) {
+                                          updateCurrentLocation();
+                                        }
+                                        print(
+                                            ' is active ${MyAppState.currentUser!.isActive}');
+                                        FireStoreUtils.updateCurrentUser(
+                                          MyAppState.currentUser!,
+                                        );
+                                      },
                                     ),
-                                    value: MyAppState.currentUser!.isActive,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        MyAppState.currentUser!.isActive =
-                                            value;
-                                      });
-                                      if (MyAppState.currentUser!.isActive ==
-                                          true) {
-                                        updateCurrentLocation();
-                                      }
-                                      print(
-                                          ' is active ${MyAppState.currentUser!.isActive}');
-                                      FireStoreUtils.updateCurrentUser(
-                                        MyAppState.currentUser!,
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                              decoration: BoxDecoration(
-                                color: Color(COLOR_PRIMARY),
-                              ),
-                            );
-                          }),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected:
-                                  _drawerSelection == DrawerSelection.Home,
-                              title: Text('Home').tr(),
-                              onTap: () {
-                                // if (MyAppState.currentUser!.isCompany) {
-                                //   Navigator.pop(context);
-                                //   setState(() {
-                                //     _drawerSelection = DrawerSelection.Drivers;
-                                //     _appBarTitle = 'Drivers'.tr();
-                                //     _currentWidget = DriverCabListScreen();
-                                //   });
-                                // } else {
-                                Navigator.pop(context);
-                                setState(() {
-                                  _drawerSelection = DrawerSelection.Home;
-                                  _appBarTitle = 'Home'.tr();
-                                  _currentWidget = CabHomeScreen(
-                                    refresh: () {
-                                      if (mounted) setState(() {});
-                                    },
-                                  );
-                                });
-                                // }
-                              },
-                              leading: Icon(CupertinoIcons.home),
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected:
-                                  _drawerSelection == DrawerSelection.Orders,
-                              leading: Image.asset(
-                                'assets/images/truck.png',
-                                color:
-                                    _drawerSelection == DrawerSelection.Orders
-                                        ? Color(COLOR_PRIMARY)
-                                        : isDarkMode(context)
-                                            ? Colors.grey.shade200
-                                            : Colors.grey.shade600,
-                                width: 24,
-                                height: 24,
-                              ),
-                              title: Text('Rides').tr(),
-                              onTap: () {
-                                Navigator.pop(context);
-                                setState(() {
-                                  _drawerSelection = DrawerSelection.Orders;
-                                  _appBarTitle = 'Rides'.tr();
-                                  _currentWidget = CabOrderScreen();
-                                });
-                              },
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected:
-                                  _drawerSelection == DrawerSelection.Wallet,
-                              leading: Icon(Icons.account_balance_wallet_sharp),
-                              title: Text('Wallet').tr(),
-                              onTap: () {
-                                Navigator.pop(context);
-                                setState(() {
-                                  _drawerSelection = DrawerSelection.Wallet;
-                                  _appBarTitle = 'Earnings'.tr();
-                                  _currentWidget = WalletScreen();
-                                });
-                              },
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected:
-                                  _drawerSelection == DrawerSelection.BankInfo,
-                              leading: Icon(Icons.account_balance),
-                              title: Text('Bank Details').tr(),
-                              onTap: () {
-                                Navigator.pop(context);
-                                setState(() {
-                                  _drawerSelection = DrawerSelection.BankInfo;
-                                  _appBarTitle = 'Bank Info'.tr();
-                                  _currentWidget = BankDetailsScreen();
-                                });
-                              },
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected: _drawerSelection ==
-                                  DrawerSelection.rideSetting,
-                              leading: Icon(CupertinoIcons.settings),
-                              title: Text('Settings').tr(),
-                              onTap: () {
-                                Navigator.pop(context);
-                                setState(() {
-                                  _drawerSelection =
-                                      DrawerSelection.rideSetting;
-                                  _appBarTitle = 'Settings'.tr();
-                                  _currentWidget = RideSettingScreen();
-                                });
-                              },
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected:
-                                  _drawerSelection == DrawerSelection.Profile,
-                              leading: Icon(CupertinoIcons.person),
-                              title: Text('Profile').tr(),
-                              onTap: () {
-                                Navigator.pop(context);
-                                setState(() {
-                                  _drawerSelection = DrawerSelection.Profile;
-                                  _appBarTitle = 'My Profile'.tr();
-                                  _currentWidget = ProfileScreen(
-                                    user: user1,
-                                  );
-                                });
-                              },
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected: _drawerSelection ==
-                                  DrawerSelection.chooseLanguage,
-                              leading: Icon(
-                                Icons.language,
-                                color: _drawerSelection ==
-                                        DrawerSelection.chooseLanguage
-                                    ? Color(COLOR_PRIMARY)
-                                    : isDarkMode(context)
-                                        ? Colors.grey.shade200
-                                        : Colors.grey.shade600,
-                              ),
-                              title: const Text('Language').tr(),
-                              onTap: () {
-                                Navigator.pop(context);
-                                setState(() {
-                                  _drawerSelection =
-                                      DrawerSelection.chooseLanguage;
-                                  _appBarTitle = 'Language'.tr();
-                                  _currentWidget = LanguageChooseScreen(
-                                    isContainer: true,
-                                  );
-                                });
-                              },
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected: _drawerSelection ==
-                                  DrawerSelection.termsCondition,
-                              leading: const Icon(Icons.policy),
-                              title: const Text('Terms and Condition').tr(),
-                              onTap: () async {
-                                push(context, const TermsAndCondition());
-                              },
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected: _drawerSelection ==
-                                  DrawerSelection.privacyPolicy,
-                              leading: const Icon(Icons.privacy_tip),
-                              title: const Text('Privacy policy').tr(),
-                              onTap: () async {
-                                push(context, const PrivacyPolicyScreen());
-                              },
-                            ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected:
-                                  _drawerSelection == DrawerSelection.inbox,
-                              leading: Icon(CupertinoIcons.chat_bubble_2_fill),
-                              title: Text('Inbox').tr(),
-                              onTap: () {
-                                if (MyAppState.currentUser == null) {
-                                  Navigator.pop(context);
-                                  push(context, AuthScreen());
-                                } else {
+                                  ],
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Color(COLOR_PRIMARY),
+                                ),
+                              );
+                            }),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected:
+                                    _drawerSelection == DrawerSelection.Home,
+                                title: Text('Home').tr(),
+                                onTap: () {
+                                  // if (MyAppState.currentUser!.isCompany) {
+                                  //   Navigator.pop(context);
+                                  //   setState(() {
+                                  //     _drawerSelection = DrawerSelection.Drivers;
+                                  //     _appBarTitle = 'Drivers'.tr();
+                                  //     _currentWidget = DriverCabListScreen();
+                                  //   });
+                                  // } else {
                                   Navigator.pop(context);
                                   setState(() {
-                                    _drawerSelection = DrawerSelection.inbox;
-                                    _appBarTitle = 'My Inbox'.tr();
-                                    _currentWidget = InboxScreen();
+                                    _drawerSelection = DrawerSelection.Home;
+                                    _appBarTitle = 'Home'.tr();
+                                    _currentWidget = CabHomeScreen(
+                                      refresh: () {
+                                        if (mounted) setState(() {});
+                                      },
+                                    );
                                   });
-                                }
-                              },
+                                  // }
+                                },
+                                leading: Icon(CupertinoIcons.home),
+                              ),
                             ),
-                          ),
-                          ListTileTheme(
-                            style: ListTileStyle.drawer,
-                            selectedColor: Color(COLOR_PRIMARY),
-                            child: ListTile(
-                              selected:
-                                  _drawerSelection == DrawerSelection.Logout,
-                              leading: Icon(Icons.logout),
-                              title: Text('Log out').tr(),
-                              onTap: () async {
-                                Navigator.pop(context);
-                                await FireStoreUtils.getCurrentUser(
-                                        MyAppState.currentUser!.userID)
-                                    .then((value) {
-                                  MyAppState.currentUser = value;
-                                });
-                                MyAppState.currentUser!.isActive = false;
-                                MyAppState.currentUser!.lastOnlineTimestamp =
-                                    Timestamp.now();
-                                await FireStoreUtils.updateCurrentUser(
-                                    MyAppState.currentUser!);
-                                await auth.FirebaseAuth.instance.signOut();
-                                MyAppState.currentUser = null;
-                                location.enableBackgroundMode(enable: false);
-                                pushAndRemoveUntil(
-                                    context, AuthScreen(), false);
-                              },
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected:
+                                    _drawerSelection == DrawerSelection.Orders,
+                                leading: Image.asset(
+                                  'assets/images/truck.png',
+                                  color:
+                                      _drawerSelection == DrawerSelection.Orders
+                                          ? Color(COLOR_PRIMARY)
+                                          : isDarkMode(context)
+                                              ? Colors.grey.shade200
+                                              : Colors.grey.shade600,
+                                  width: 24,
+                                  height: 24,
+                                ),
+                                title: Text('Rides').tr(),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _drawerSelection = DrawerSelection.Orders;
+                                    _appBarTitle = 'Rides'.tr();
+                                    _currentWidget = CabOrderScreen();
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                        ],
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected:
+                                    _drawerSelection == DrawerSelection.Wallet,
+                                leading:
+                                    Icon(Icons.account_balance_wallet_sharp),
+                                title: Text('Wallet').tr(),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _drawerSelection = DrawerSelection.Wallet;
+                                    _appBarTitle = 'Earnings'.tr();
+                                    _currentWidget = WalletScreen();
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected: _drawerSelection ==
+                                    DrawerSelection.BankInfo,
+                                leading: Icon(Icons.account_balance),
+                                title: Text('Bank Details').tr(),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _drawerSelection = DrawerSelection.BankInfo;
+                                    _appBarTitle = 'Bank Info'.tr();
+                                    _currentWidget = BankDetailsScreen();
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected: _drawerSelection ==
+                                    DrawerSelection.rideSetting,
+                                leading: Icon(CupertinoIcons.settings),
+                                title: Text('Settings').tr(),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _drawerSelection =
+                                        DrawerSelection.rideSetting;
+                                    _appBarTitle = 'Settings'.tr();
+                                    _currentWidget = RideSettingScreen();
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected:
+                                    _drawerSelection == DrawerSelection.Profile,
+                                leading: Icon(CupertinoIcons.person),
+                                title: Text('Profile').tr(),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _drawerSelection = DrawerSelection.Profile;
+                                    _appBarTitle = 'My Profile'.tr();
+                                    _currentWidget = ProfileScreen(
+                                      user: user1,
+                                    );
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected: _drawerSelection ==
+                                    DrawerSelection.chooseLanguage,
+                                leading: Icon(
+                                  Icons.language,
+                                  color: _drawerSelection ==
+                                          DrawerSelection.chooseLanguage
+                                      ? Color(COLOR_PRIMARY)
+                                      : isDarkMode(context)
+                                          ? Colors.grey.shade200
+                                          : Colors.grey.shade600,
+                                ),
+                                title: const Text('Language').tr(),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  setState(() {
+                                    _drawerSelection =
+                                        DrawerSelection.chooseLanguage;
+                                    _appBarTitle = 'Language'.tr();
+                                    _currentWidget = LanguageChooseScreen(
+                                      isContainer: true,
+                                    );
+                                  });
+                                },
+                              ),
+                            ),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected: _drawerSelection ==
+                                    DrawerSelection.termsCondition,
+                                leading: const Icon(Icons.policy),
+                                title: const Text('Terms and Condition').tr(),
+                                onTap: () async {
+                                  push(context, const TermsAndCondition());
+                                },
+                              ),
+                            ),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected: _drawerSelection ==
+                                    DrawerSelection.privacyPolicy,
+                                leading: const Icon(Icons.privacy_tip),
+                                title: const Text('Privacy policy').tr(),
+                                onTap: () async {
+                                  push(context, const PrivacyPolicyScreen());
+                                },
+                              ),
+                            ),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected:
+                                    _drawerSelection == DrawerSelection.inbox,
+                                leading:
+                                    Icon(CupertinoIcons.chat_bubble_2_fill),
+                                title: Text('Inbox').tr(),
+                                onTap: () {
+                                  if (MyAppState.currentUser == null) {
+                                    Navigator.pop(context);
+                                    push(context, AuthScreen());
+                                  } else {
+                                    Navigator.pop(context);
+                                    setState(() {
+                                      _drawerSelection = DrawerSelection.inbox;
+                                      _appBarTitle = 'My Inbox'.tr();
+                                      _currentWidget = InboxScreen();
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                            ListTileTheme(
+                              style: ListTileStyle.drawer,
+                              selectedColor: Color(COLOR_PRIMARY),
+                              child: ListTile(
+                                selected:
+                                    _drawerSelection == DrawerSelection.Logout,
+                                leading: Icon(Icons.logout),
+                                title: Text('Log out').tr(),
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  await FireStoreUtils.getCurrentUser(
+                                          MyAppState.currentUser!.userID)
+                                      .then((value) {
+                                    MyAppState.currentUser = value;
+                                  });
+                                  MyAppState.currentUser!.isActive = false;
+                                  MyAppState.currentUser!.lastOnlineTimestamp =
+                                      Timestamp.now();
+                                  await FireStoreUtils.updateCurrentUser(
+                                      MyAppState.currentUser!);
+                                  await auth.FirebaseAuth.instance.signOut();
+                                  MyAppState.currentUser = null;
+                                  location.enableBackgroundMode(enable: false);
+                                  pushAndRemoveUntil(
+                                      context, AuthScreen(), false);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text("V : $appVersion"),
-                    )
-                  ],
-                ),
-              ),
-              appBar: AppBar(
-                iconTheme: IconThemeData(
-                  color: isDarkMode(context) ? Colors.white : Color(DARK_COLOR),
-                ),
-                centerTitle:
-                    _drawerSelection == DrawerSelection.Wallet ? true : false,
-                backgroundColor:
-                    isDarkMode(context) ? Color(DARK_COLOR) : Colors.white,
-                title: Text(
-                  _appBarTitle,
-                  style: TextStyle(
-                    color: isDarkMode(context) ? Colors.white : Colors.black,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("V : $appVersion"),
+                      )
+                    ],
                   ),
                 ),
-              ),
-              body: _currentWidget,
-            );
-          },
+                appBar: AppBar(
+                  iconTheme: IconThemeData(
+                    color:
+                        isDarkMode(context) ? Colors.white : Color(DARK_COLOR),
+                  ),
+                  centerTitle:
+                      _drawerSelection == DrawerSelection.Wallet ? true : false,
+                  backgroundColor:
+                      isDarkMode(context) ? Color(DARK_COLOR) : Colors.white,
+                  title: Text(
+                    _appBarTitle,
+                    style: TextStyle(
+                      color: isDarkMode(context) ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                body: _currentWidget,
+              );
+            },
+          ),
         ),
       ),
     );

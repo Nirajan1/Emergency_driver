@@ -10,6 +10,7 @@ import 'package:emartdriver/controller/notification_pref.dart';
 import 'package:emartdriver/main.dart';
 import 'package:emartdriver/model/CabOrderModel.dart';
 import 'package:emartdriver/model/User.dart';
+import 'package:emartdriver/model/hospital_model.dart';
 import 'package:emartdriver/services/FirebaseHelper.dart';
 import 'package:emartdriver/services/helper.dart';
 import 'package:emartdriver/services/send_notification.dart';
@@ -124,6 +125,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     getDriver();
     setIcons();
     updateDriverOrder();
+    Future.delayed(const Duration(seconds: 3), () {
+      getDirectionsWeb();
+    });
     print('enableotptrip start---->$enableOTPTripStart');
     print('======>$driverOrderAcceptRejectDuration');
 
@@ -160,7 +164,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   Future<void> deletePreference() async {
     SharedPreferences ref = await SharedPreferences.getInstance();
     ref.remove("inprogressId");
-    cabHomecontroller.ridesId.value = '';
+    ref.remove("bookingId");
+    cabHomecontroller.bookingId.value = '';
     setState(() {});
   }
 
@@ -183,13 +188,19 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    // isShow = false;
     // deletereference();
     // if (cabHomecontroller.ridesId.value.isNotEmpty) {
     //   getRidesInfo(cabHomecontroller.ridesId.value);
     // } else {
     //   print('cabHomeContoller rides Id is empty');
     // }
-
+    // print(
+    //     '_driverModel!.location.latitude ${cabHomecontroller.newHospitalData!.location.latitude}');
+    if (cabHomecontroller.bookingId.value.isNotEmpty)
+      print('booking id ${cabHomecontroller.bookingId}');
+    // print('booking id ${cabHomecontroller.newRidesData!.status}');
+    // FireStoreUtils.fetchHospitalBooking(cabHomecontroller.bookingId.value);
     isDarkMode(context)
         ? _mapController?.setMapStyle('[{"featureType": "all","'
             'elementType": "'
@@ -209,24 +220,24 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       key: _scaffoldKey,
       body: Column(
         children: [
-          Visibility(
-            visible: _driverModel!.inProgressOrderID == null &&
-                double.parse(_driverModel!.walletAmount.toString()) <
-                    double.parse(minimumDepositToRideAccept),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                color: Colors.black,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                      "${"You have to minimum "}${amountShow(amount: minimumDepositToRideAccept.toString())} ${"wallet amount to receiving Order"}",
-                      style: TextStyle(color: Colors.white),
-                      textAlign: TextAlign.center),
-                ),
-              ),
-            ),
-          ),
+          // Visibility(
+          //   visible: _driverModel!.inProgressOrderID == null &&
+          //       double.parse(_driverModel!.walletAmount.toString()) <
+          //           double.parse(minimumDepositToRideAccept),
+          //   child: Align(
+          //     alignment: Alignment.topCenter,
+          //     child: Container(
+          //       color: Colors.black,
+          //       child: Padding(
+          //         padding: const EdgeInsets.all(8.0),
+          //         child: Text(
+          //             "${"You have to minimum "}${amountShow(amount: minimumDepositToRideAccept.toString())} ${"wallet amount to receiving Order"}",
+          //             style: TextStyle(color: Colors.white),
+          //             textAlign: TextAlign.center),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Expanded(
             child: GoogleMap(
               onMapCreated: _onMapCreated,
@@ -253,13 +264,213 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   isShow == true
               ? buildOrderActionsCard()
               : Container(),
-          // ridesId != null ? showDriverBottomSheet() : Container()
+
+          // show accept reject  button for web and from app
           Obx(
-            () => cabHomecontroller.isLoading.value == true
-                ? CircularProgressIndicator.adaptive()
-                : cabHomecontroller.ridesId.value.isNotEmpty
-                    ? showDriverBottomSheet()
-                    : Container(),
+            () {
+              if (cabHomecontroller.isLoading.value == true) {
+                return CircularProgressIndicator();
+              } else {
+                if (cabHomecontroller.ridesId.value.isNotEmpty) {
+                  return showDriverBottomSheet();
+                } else if (cabHomecontroller.bookingId.isNotEmpty) {
+                  return showDriverBottomSheetForWeb();
+                } else {
+                  return SizedBox.shrink(); // or any default widget
+                }
+              }
+            },
+          ),
+          //? pick customer button for web flow
+          Obx(
+            () => cabHomecontroller.showWebCustomerPickUpButton.value == true
+                ? FadeTransition(
+                    opacity: _animationController!,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 20,
+                      ),
+                      child: AnimatedContainer(
+                        duration: Duration(seconds: 2),
+                        height: 40,
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(4),
+                              ),
+                            ),
+                            backgroundColor: Color(COLOR_PRIMARY),
+                          ),
+                          onPressed: () async {
+                            SharedPreferences preferences =
+                                await SharedPreferences.getInstance();
+                            // update the show web third poly line and show pickup button
+                            cabHomecontroller.updateShowWebThirdPolyLine(false);
+                            cabHomecontroller
+                                .updateShowWebCustomerPickUpButton(false);
+                            // remove  the changed bool value as it is no longer required
+                            preferences.remove('showThirdPolyline');
+                            preferences.remove('showCustomerPickUpButton');
+
+                            // now show the secondpoly line check
+                            cabHomecontroller.updateShowWebSecondPolyLine(true);
+                            // store the changed second polyline value
+                            preferences.setBool('showSecondPolyline', true);
+
+                            // now show the customer Destination reach Button
+                            cabHomecontroller
+                                .updateShowWebCustomerDestinationReachButton(
+                                    true);
+                            preferences.setBool(
+                                'showWebCustomerDestinationReachButton', true);
+                            await getDirectionsWeb();
+                          },
+                          child: Text(
+                            'Pickup Customer',
+                            style: TextStyle(
+                                color: Color(0xffFFFFFF),
+                                fontFamily: "Poppinsm",
+                                letterSpacing: 0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : SizedBox(),
+          ),
+          //? reached to destination for web flow
+          Obx(
+            () => cabHomecontroller.showWebCustomerDestinationReachButton ==
+                    true
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 20),
+                    child: AnimatedContainer(
+                      duration: Duration(seconds: 2),
+                      height: 40,
+                      width: MediaQuery.of(context).size.width,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(4),
+                            ),
+                          ),
+                          backgroundColor: Color(COLOR_PRIMARY),
+                        ),
+                        onPressed: () async {
+                          SharedPreferences preferences =
+                              await SharedPreferences.getInstance();
+                          // now update the secondpoly line check to false and show destination button to false
+                          cabHomecontroller.updateShowWebSecondPolyLine(false);
+                          cabHomecontroller
+                              .updateShowWebCustomerDestinationReachButton(
+                                  false);
+                          // remove the changed second polyline value for the cache
+                          preferences.remove('showSecondPolyline');
+                          preferences
+                              .remove('showWebCustomerDestinationReachButton');
+                          // showWebThirdPolyLine
+                          cabHomecontroller.updateShowWebThirdPolyLine(true);
+                          preferences.setBool('showThirdPolyline', true);
+
+                          // showWebCustomerCompleteRideButton
+                          cabHomecontroller
+                              .updateShowWebCustomerCompleteRideButton(true);
+                          preferences.setBool(
+                              'ShowWebCustomerCompleteRideButton', true);
+                          await getDirectionsWeb();
+                        },
+                        child: Text(
+                          'Reached To destination',
+                          style: TextStyle(
+                              color: Color(0xffFFFFFF),
+                              fontFamily: "Poppinsm",
+                              letterSpacing: 0.5),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
+          ),
+          //? complete ride for web flow
+          Obx(
+            () => cabHomecontroller.showWebCustomerCompleteRideButton.value ==
+                    true
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 20),
+                    child: AnimatedContainer(
+                      duration: Duration(seconds: 2),
+                      height: 40,
+                      width: MediaQuery.of(context).size.width,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(4),
+                            ),
+                          ),
+                          backgroundColor: Color(COLOR_PRIMARY),
+                        ),
+                        onPressed: () async {
+                          showProgress(context, 'Completing Ride....', false);
+
+                          SharedPreferences preferences =
+                              await SharedPreferences.getInstance();
+                          // showWebThirdPolyLine.value = false;
+                          cabHomecontroller.updateShowWebThirdPolyLine(false);
+                          preferences.remove('showThirdPolyline');
+                          // showWebCustomerCompleteRideButton.value = true;
+                          cabHomecontroller
+                              .updateShowWebCustomerCompleteRideButton(false);
+                          preferences
+                              .remove('ShowWebCustomerCompleteRideButton');
+                          HospitalBooking newBooking = HospitalBooking(
+                            bookingType: cabHomecontroller
+                                        .newHospitalData!.bookingType ==
+                                    'hospitl'
+                                ? 'hospital'
+                                : 'one_time',
+                            createdAt: DateTime.now(),
+                            hospitalId:
+                                cabHomecontroller.newHospitalData!.hospitalId,
+                            hospitalLatitude: cabHomecontroller
+                                .newHospitalData!.hospitalLatitude,
+                            hospitalLongitude: cabHomecontroller
+                                .newHospitalData!.hospitalLongitude,
+                            location: GeoPoint(
+                              cabHomecontroller
+                                  .newHospitalData!.location.latitude,
+                              cabHomecontroller
+                                  .newHospitalData!.location.longitude,
+                            ),
+                            status: 'pending',
+                            phone: cabHomecontroller.newHospitalData!.phone,
+                            assignedDriverId: MyAppState.currentUser!.userID,
+                            payment: 'completed',
+                          );
+
+                          await FireStoreUtils().createHospitalBooking(
+                            cabHomecontroller.bookingId.value,
+                            newBooking,
+                          );
+                          hideProgress();
+                        },
+                        child: Text(
+                          'Complete Ride',
+                          style: TextStyle(
+                              color: Color(0xffFFFFFF),
+                              fontFamily: "Poppinsm",
+                              letterSpacing: 0.5),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
           )
         ],
       ),
@@ -341,7 +552,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
           'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]');
   }
 
-//? when order comes this is triggred
+//? when order comes from app  this is triggred
   Widget showDriverBottomSheet() {
     return Padding(
       padding: EdgeInsets.all(10),
@@ -598,16 +809,39 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               .showSnackBar(snack);
                           setState(() {});
                         } else {
-                          showProgress(context, 'Accepting Ride....', false);
-                          try {
-                            if (_timer != null) {
-                              _timer!.cancel();
+                          if (cabHomecontroller.newRidesData!.status ==
+                              ORDER_STATUS_ACCEPTED) {
+                            print("----->11111s}");
+                            Navigator.pop(context);
+
+                            MyAppState.currentUser!.ordercabRequestData = null;
+                            MyAppState.currentUser!.inProgressOrderID = null;
+                            deletePreference();
+                            await FireStoreUtils.updateCurrentUser(
+                                MyAppState.currentUser!);
+                            final snack = SnackBar(
+                              content: Text(
+                                "This Ride is already accepted.",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.black,
+                            );
+                            ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                                .showSnackBar(snack);
+                            setState(() {});
+                          } else {
+                            showProgress(context, 'Accepting Ride....', false);
+                            try {
+                              if (_timer != null) {
+                                _timer!.cancel();
+                              }
+                              await acceptOrder();
+                              hideProgress();
+                            } catch (e) {
+                              hideProgress();
+                              print('HomeScreenState.showDriverBottomSheet $e');
                             }
-                            await acceptOrder();
-                            hideProgress();
-                          } catch (e) {
-                            hideProgress();
-                            print('HomeScreenState.showDriverBottomSheet $e');
                           }
                         }
 
@@ -626,13 +860,278 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     );
   }
 
+  Widget showDriverBottomSheetForWeb() {
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+        decoration: BoxDecoration(
+          color: Color(0xff212121),
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          // crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: 5),
+            cabHomecontroller.newHospitalData!.bookingType == 'one_time'
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Phone",
+                          style: TextStyle(
+                              color: Color(0xffADADAD),
+                              fontFamily: "Poppinsr",
+                              letterSpacing: 0.5),
+                        ),
+                      ),
+                      Text(
+                        "${cabHomecontroller.newHospitalData!.phone} ",
+                        style: TextStyle(
+                            color: Color(0xffFFFFFF),
+                            fontFamily: "Poppinsm",
+                            letterSpacing: 0.5),
+                      ),
+                    ],
+                  )
+                : const SizedBox(),
+            const SizedBox(
+              height: 4,
+            ),
+            cabHomecontroller.newHospitalData!.bookingType == 'one_time'
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Booking Type",
+                          style: TextStyle(
+                              color: Color(0xffADADAD),
+                              fontFamily: "Poppinsr",
+                              letterSpacing: 0.5),
+                        ),
+                      ),
+                      Text(
+                        "${cabHomecontroller.newHospitalData!.bookingType} ",
+                        style: TextStyle(
+                            color: Color(0xffFFFFFF),
+                            fontFamily: "Poppinsm",
+                            letterSpacing: 0.5),
+                      ),
+                    ],
+                  )
+                : const SizedBox(),
+
+            cabHomecontroller.newHospitalData!.bookingType == 'one_time'
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Booking Id",
+                          style: TextStyle(
+                              color: Color(0xffADADAD),
+                              fontFamily: "Poppinsr",
+                              letterSpacing: 0.5),
+                        ),
+                      ),
+                      Text(
+                        "${cabHomecontroller.bookingId} ",
+                        style: TextStyle(
+                            color: Color(0xffFFFFFF),
+                            fontFamily: "Poppinsm",
+                            letterSpacing: 0.5),
+                      ),
+                    ],
+                  )
+                : const SizedBox(),
+            if (cabHomecontroller.newHospitalData!.bookingType == 'one_time')
+              const SizedBox(
+                height: 10,
+              ),
+            // accept and reject ride
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height / 20,
+                  width: MediaQuery.of(context).size.width / 2.5,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 12),
+                      backgroundColor: Color(COLOR_PRIMARY),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(5),
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      'Reject',
+                      style: TextStyle(
+                          color: Color(0xffFFFFFF),
+                          fontFamily: "Poppinsm",
+                          letterSpacing: 0.5),
+                    ),
+                    onPressed: () async {
+                      ///new
+                      if (cabHomecontroller.newHospitalData!.status ==
+                          'cancelled') {
+                        print("----->11111s}");
+                        Navigator.pop(context);
+
+                        MyAppState.currentUser!.ordercabRequestData = null;
+                        MyAppState.currentUser!.inProgressOrderID = null;
+                        deletePreference();
+                        await FireStoreUtils.updateCurrentUser(
+                          MyAppState.currentUser!,
+                        );
+                        final snack = SnackBar(
+                          content: Text(
+                            "This Ride is reject by admin.",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          duration: Duration(seconds: 2),
+                          backgroundColor: Colors.black,
+                        );
+                        ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                            .showSnackBar(snack);
+                        setState(() {});
+                      } else {
+                        //Navigator.pop(context);
+                        showProgress(context, "Rejecting Ride...", false);
+                        try {
+                          await rejectOrderFromWeb();
+                          cabHomecontroller.bookingId.value = '';
+                          deletePreference();
+                          hideProgress();
+                        } catch (e) {
+                          hideProgress();
+                          print('HomeScreenState.showDriverBottomSheet $e');
+                        }
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height / 20,
+                  width: MediaQuery.of(context).size.width / 2.5,
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 6, horizontal: 12),
+                        backgroundColor: Color(COLOR_PRIMARY),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(5),
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        'Accept',
+                        style: TextStyle(
+                            color: Color(0xffFFFFFF),
+                            fontFamily: "Poppinsm",
+                            letterSpacing: 0.5),
+                      ),
+                      onPressed: () async {
+                        if (cabHomecontroller.newHospitalData!.status ==
+                                'cancelled' ||
+                            cabHomecontroller.newHospitalData!.status ==
+                                'accepted') {
+                          print("----->cancelled when accept button pressed}");
+                          Navigator.pop(context);
+
+                          MyAppState.currentUser!.ordercabRequestData = null;
+                          MyAppState.currentUser!.inProgressOrderID = null;
+                          deletePreference();
+                          await FireStoreUtils.updateCurrentUser(
+                              MyAppState.currentUser!);
+                          final snack = SnackBar(
+                            content: Text(
+                              cabHomecontroller.newHospitalData!.status ==
+                                      'cancelled'
+                                  ? "This Ride is cancelled by hospital."
+                                  : "This Ride is already accepted.",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            duration: Duration(seconds: 2),
+                            backgroundColor: Colors.black,
+                          );
+                          ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                              .showSnackBar(snack);
+                          setState(() {});
+                        } else {
+                          if (cabHomecontroller
+                                  .newHospitalData!.assignedDriverId !=
+                              null) {
+                            print("----->11111s}");
+                            // Navigator.pop(context);
+
+                            MyAppState.currentUser!.ordercabRequestData = null;
+                            MyAppState.currentUser!.inProgressOrderID = null;
+                            deletePreference();
+                            await FireStoreUtils.updateCurrentUser(
+                                MyAppState.currentUser!);
+                            final snack = SnackBar(
+                              content: Text(
+                                "This Ride is already accepted.",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.black,
+                            );
+                            ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                                .showSnackBar(snack);
+                            setState(() {});
+                          } else {
+                            showProgress(context, 'Accepting Ride....', false);
+                            try {
+                              if (_timer != null) {
+                                _timer!.cancel();
+                              }
+                              await acceptOrderFromWeb();
+
+                              hideProgress();
+                              final snack = SnackBar(
+                                content: Text(
+                                  "Ride accepted.",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                duration: Duration(seconds: 2),
+                                backgroundColor: Colors.black,
+                              );
+                              ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                                  .showSnackBar(snack);
+                              setState(() {});
+                            } catch (e) {
+                              hideProgress();
+                              print('HomeScreenState.showDriverBottomSheet $e');
+                            }
+                          }
+                        }
+                      }),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   acceptOrder() async {
     // CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
     cabHomecontroller.ridesId.value = '';
 
     // _driverModel!.ordercabRequestData = null;
     _driverModel!.inProgressOrderID = cabHomecontroller.newRidesData!.id;
-    print("in accept rocess : ${_driverModel!.inProgressOrderID}");
+    print(
+      "in accept process : ${_driverModel!.inProgressOrderID}",
+    );
     await FireStoreUtils.updateCurrentUser(_driverModel!);
 
     cabHomecontroller.newRidesData!.status = ORDER_STATUS_DRIVER_ACCEPTED;
@@ -662,21 +1161,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     });
   }
 
-  // rejectOrder() async {
-  //   if (_timer != null) {
-  //     _timer!.cancel();
-  //   }
-  //   CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
-  //   if (orderModel.rejectedByDrivers == null) {
-  //     orderModel.rejectedByDrivers = [];
-  //   }
-  //   orderModel.rejectedByDrivers!.add(_driverModel!.userID);
-  //   orderModel.status = ORDER_STATUS_DRIVER_REJECTED;
-  //   await FireStoreUtils.updateCabOrder(orderModel);
-  //   _driverModel!.ordercabRequestData = null;
-  //   await FireStoreUtils.updateCurrentUser(_driverModel!);
-  // }
-
   rejectOrder() async {
     cabHomecontroller.ridesId.value = '';
     if (_timer != null) {
@@ -695,17 +1179,80 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     await FireStoreUtils.updateCurrentUser(_driverModel!);
   }
 
+  acceptOrderFromWeb() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    // CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
+    // _driverModel!.ordercabRequestData = null;
+    _driverModel!.inProgressOrderID = null;
+    print(
+      "in accept process : ${_driverModel!.inProgressOrderID}",
+    );
+    await FireStoreUtils.updateCurrentUser(_driverModel!);
+
+    HospitalBooking newBooking = HospitalBooking(
+      bookingType: cabHomecontroller.newHospitalData!.bookingType == 'hospitl'
+          ? 'hospital'
+          : 'one_time',
+      createdAt: DateTime.now(),
+      hospitalId: cabHomecontroller.newHospitalData!.hospitalId,
+      hospitalLatitude: cabHomecontroller.newHospitalData!.hospitalLatitude,
+      hospitalLongitude: cabHomecontroller.newHospitalData!.hospitalLongitude,
+      location: GeoPoint(
+        cabHomecontroller.newHospitalData!.location.latitude,
+        cabHomecontroller.newHospitalData!.location.longitude,
+      ),
+      status: 'pending',
+      phone: cabHomecontroller.newHospitalData!.phone,
+      assignedDriverId: MyAppState.currentUser!.userID,
+    );
+
+    await FireStoreUtils().createHospitalBooking(
+      cabHomecontroller.bookingId.value,
+      newBooking,
+    );
+    deletePreference();
+    //update show third polyline
+    cabHomecontroller.updateShowWebThirdPolyLine(true);
+    // store the bool value
+    preferences.setBool('showThirdPolyline', true);
+
+    // showWebCustomerPickUpButton.value = true;
+    // update show customer pick up button
+    cabHomecontroller.updateShowWebCustomerPickUpButton(true);
+    //store the bool value
+    preferences.setBool('showCustomerPickUpButton', true);
+
+    await getDirectionsWeb();
+  }
+
+  rejectOrderFromWeb() async {
+    cabHomecontroller.bookingId.value = '';
+    if (_timer != null) {
+      _timer!.cancel();
+    }
+    _driverModel!.ordercabRequestData = null;
+    _driverModel!.ordercabRequestData = null;
+    deletePreference();
+    await FireStoreUtils.updateCurrentUser(_driverModel!);
+  }
+
   getDirections() async {
+    // the order is 333 222 33333 when accepted 3 and when picked 2 and when riched destination 3
     if (currentOrder != null) {
       if (currentOrder!.status == ORDER_STATUS_SHIPPED) {
+        print('here is printed 1');
         List<LatLng> polylineCoordinates = [];
 
         PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
           request: PolylineRequest(
-            origin: PointLatLng(_driverModel!.location.latitude,
-                _driverModel!.location.longitude),
-            destination: PointLatLng(currentOrder!.sourceLocation.latitude,
-                currentOrder!.sourceLocation.longitude),
+            origin: PointLatLng(
+              _driverModel!.location.latitude,
+              _driverModel!.location.longitude,
+            ),
+            destination: PointLatLng(
+              currentOrder!.sourceLocation.latitude,
+              currentOrder!.sourceLocation.longitude,
+            ),
             mode: TravelMode.driving,
           ),
         );
@@ -722,8 +1269,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
             _markers['Driver'] = Marker(
                 markerId: const MarkerId('Driver'),
                 infoWindow: const InfoWindow(title: "Driver"),
-                position: LatLng(_driverModel!.location.latitude,
-                    _driverModel!.location.longitude),
+                position: LatLng(
+                  _driverModel!.location.latitude,
+                  _driverModel!.location.longitude,
+                ),
                 icon: taxiIcon!,
                 rotation: double.parse(_driverModel!.rotation.toString()));
           },
@@ -749,15 +1298,21 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         addPolyLine(polylineCoordinates);
       } else if (currentOrder!.status == ORDER_STATUS_IN_TRANSIT ||
           currentOrder!.status == ORDER_REACHED_DESTINATION) {
+        print('here is printed 2');
+
         List<LatLng> polylineCoordinates = [];
 
         PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
           googleApiKey: GOOGLE_API_KEY,
           request: PolylineRequest(
-            origin: PointLatLng(_driverModel!.location.latitude,
-                _driverModel!.location.longitude),
-            destination: PointLatLng(currentOrder!.destinationLocation.latitude,
-                currentOrder!.destinationLocation.longitude),
+            origin: PointLatLng(
+              _driverModel!.location.latitude,
+              _driverModel!.location.longitude,
+            ),
+            destination: PointLatLng(
+              currentOrder!.destinationLocation.latitude,
+              currentOrder!.destinationLocation.longitude,
+            ),
             mode: TravelMode.driving,
           ),
         );
@@ -782,29 +1337,41 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         _markers['Departure'] = Marker(
           markerId: const MarkerId('Departure'),
           infoWindow: const InfoWindow(title: "Departure"),
-          position: LatLng(currentOrder!.sourceLocation.latitude,
-              currentOrder!.sourceLocation.longitude),
+          position: LatLng(
+            currentOrder!.sourceLocation.latitude,
+            currentOrder!.sourceLocation.longitude,
+          ),
           icon: departureIcon!,
         );
         _markers.remove("Destination");
         _markers['Destination'] = Marker(
           markerId: const MarkerId('Destination'),
           infoWindow: const InfoWindow(title: "Destination"),
-          position: LatLng(currentOrder!.destinationLocation.latitude,
-              currentOrder!.destinationLocation.longitude),
+          position: LatLng(
+            currentOrder!.destinationLocation.latitude,
+            currentOrder!.destinationLocation.longitude,
+          ),
           icon: destinationIcon!,
         );
         addPolyLine(polylineCoordinates);
       } else {
+        print('here is printed 3');
+
         List<LatLng> polylineCoordinates = [];
 
         PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
           googleApiKey: GOOGLE_API_KEY,
           request: PolylineRequest(
-            origin: PointLatLng(currentOrder!.sourceLocation.latitude,
-                currentOrder!.sourceLocation.longitude),
-            destination: PointLatLng(currentOrder!.destinationLocation.latitude,
-                currentOrder!.destinationLocation.longitude),
+            origin: PointLatLng(
+              currentOrder!
+                  .sourceLocation.latitude, //source vaneako user ko lat long
+              currentOrder!.sourceLocation.longitude,
+            ),
+            destination: PointLatLng(
+              currentOrder!.destinationLocation
+                  .latitude, // destination vanaeko  hospital ko lat long
+              currentOrder!.destinationLocation.longitude,
+            ),
             mode: TravelMode.driving,
           ),
         );
@@ -818,20 +1385,154 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         _markers['Departure'] = Marker(
           markerId: const MarkerId('Departure'),
           infoWindow: const InfoWindow(title: "Departure"),
-          position: LatLng(currentOrder!.sourceLocation.latitude,
-              currentOrder!.sourceLocation.longitude),
+          position: LatLng(
+            currentOrder!.sourceLocation.latitude,
+            currentOrder!.sourceLocation.longitude,
+          ),
           icon: departureIcon!,
         );
         _markers.remove("Destination");
         _markers['Destination'] = Marker(
           markerId: const MarkerId('Destination'),
           infoWindow: const InfoWindow(title: "Destination"),
-          position: LatLng(currentOrder!.destinationLocation.latitude,
-              currentOrder!.destinationLocation.longitude),
+          position: LatLng(
+            currentOrder!.destinationLocation.latitude,
+            currentOrder!.destinationLocation.longitude,
+          ),
           icon: destinationIcon!,
         );
         addPolyLine(polylineCoordinates);
       }
+    }
+  }
+
+  getDirectionsWeb() async {
+    print('get direction was called');
+    print(
+        'get direction was called ${cabHomecontroller.showWebSecondPolyLine.value}');
+    print(
+        'get direction was called ${cabHomecontroller.showWebThirdPolyLine.value}');
+    if (cabHomecontroller.showWebSecondPolyLine.value == true) {
+      print('second called');
+      List<LatLng> polylineCoordinates = [];
+
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: GOOGLE_API_KEY,
+        request: PolylineRequest(
+          origin: PointLatLng(
+            // drive ko lat long
+            _driverModel!.location.latitude,
+            _driverModel!.location.longitude,
+            // 21.1590269,
+            // 79.0830738,
+          ),
+          destination: PointLatLng(
+            // web ko hospital ko lat long
+            double.parse(cabHomecontroller.newHospitalData!.hospitalLatitude),
+            double.parse(cabHomecontroller.newHospitalData!.hospitalLongitude),
+          ),
+          mode: TravelMode.driving,
+        ),
+      );
+
+      print("----?${result.points}");
+      if (result.points.isNotEmpty) {
+        for (var point in result.points) {
+          polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+        }
+      }
+      _markers.remove("Driver");
+      _markers['Driver'] = Marker(
+        markerId: const MarkerId('Driver'),
+        infoWindow: const InfoWindow(title: "Driver"),
+        position: LatLng(
+          _driverModel!.location.latitude,
+          _driverModel!.location.longitude,
+          // 21.1590269,
+          // 79.0830738,
+        ),
+        rotation: double.parse(_driverModel!.rotation.toString()),
+        icon: taxiIcon!,
+      );
+
+      _markers.remove("Departure");
+      _markers['Departure'] = Marker(
+        markerId: const MarkerId('Departure'),
+        infoWindow: const InfoWindow(title: "Departure"),
+        position: LatLng(
+          // user ko lat long
+          cabHomecontroller.newHospitalData!.location.latitude,
+          cabHomecontroller.newHospitalData!.location.longitude,
+        ),
+        icon: departureIcon!,
+      );
+      _markers.remove("Destination");
+      _markers['Destination'] = Marker(
+        markerId: const MarkerId('Destination'),
+        infoWindow: const InfoWindow(title: "Destination"),
+        position: LatLng(
+          double.parse(cabHomecontroller.newHospitalData!.hospitalLatitude),
+          double.parse(cabHomecontroller.newHospitalData!.hospitalLongitude),
+        ),
+        icon: destinationIcon!,
+      );
+      addPolyLine(polylineCoordinates);
+    }
+    if (cabHomecontroller.showWebThirdPolyLine.value == true) {
+      print('third  called');
+
+      List<LatLng> polylineCoordinates = [];
+
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: GOOGLE_API_KEY,
+        request: PolylineRequest(
+          origin: PointLatLng(
+            //? user ko lat long
+            cabHomecontroller.newHospitalData!.location.latitude,
+            cabHomecontroller.newHospitalData!.location.longitude,
+            // 21.1587022,
+            // 79.083264,
+          ),
+          destination: PointLatLng(
+            double.parse(cabHomecontroller.newHospitalData!.hospitalLatitude),
+            double.parse(cabHomecontroller
+                .newHospitalData!.hospitalLongitude), // hostila ko lat long
+            // 21.1587592,
+            // 79.0808391,
+          ),
+          mode: TravelMode.driving,
+        ),
+      );
+
+      print("----?${result.points}");
+      if (result.points.isNotEmpty) {
+        for (var point in result.points) {
+          polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+        }
+      }
+      _markers.remove("Departure");
+      _markers['Departure'] = Marker(
+        markerId: const MarkerId('Departure'),
+        infoWindow: const InfoWindow(title: "Departure"),
+        position: LatLng(
+          //? user ko lat long dhaki ko departure
+          cabHomecontroller.newHospitalData!.location.latitude,
+          cabHomecontroller.newHospitalData!.location.longitude,
+        ),
+        icon: departureIcon!,
+      );
+      _markers.remove("Destination");
+      _markers['Destination'] = Marker(
+        markerId: const MarkerId('Destination'),
+        infoWindow: const InfoWindow(title: "Destination"),
+        position: LatLng(
+          // hospital ko lat long
+          double.parse(cabHomecontroller.newHospitalData!.hospitalLatitude),
+          double.parse(cabHomecontroller.newHospitalData!.hospitalLongitude),
+        ),
+        icon: destinationIcon!,
+      );
+      addPolyLine(polylineCoordinates);
     }
   }
 
@@ -900,7 +1601,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     );
     polyLines[id] = polyline;
     updateCameraLocation(
-        polylineCoordinates.first, polylineCoordinates.last, _mapController);
+      polylineCoordinates.first,
+      polylineCoordinates.last,
+      _mapController,
+    );
     setState(() {});
   }
 
@@ -1482,7 +2186,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       showProgress(context, 'Updating Ride...', false);
       currentOrder!.status = ORDER_STATUS_IN_TRANSIT;
       await FireStoreUtils.updateCabOrder(currentOrder!);
-
       hideProgress();
       setState(() {});
     }
