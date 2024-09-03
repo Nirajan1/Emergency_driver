@@ -3,11 +3,6 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:emartdriver/controller/notification_pref.dart';
-import 'package:emartdriver/main.dart';
-import 'package:emartdriver/rental_service/rental_service_dashboard.dart';
-import 'package:emartdriver/services/helper.dart';
-import 'package:emartdriver/ui/chatScreen.dart';
-import 'package:emartdriver/ui/chat_screen/chat_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -76,17 +71,28 @@ class NotificationService {
       if (message.notification != null) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? ridesId = message.data["rides_id"];
+        String? bookingId = message.data["booking_id"];
         if (ridesId != null && ridesId.isNotEmpty) {
           await prefs.setString("inprogressId", ridesId);
-
-          log(message.notification.toString());
+          // log(message.notification.toString());
 
           // Update the GetX controller
           CabHomeController controller = Get.find();
           controller.updateRidesId(ridesId);
           // Call getRidesInfo to fetch data and show loading
           await controller.getRidesInfo(ridesId);
-
+          controller.listenToRideChanges(ridesId);
+          display(message);
+        } else if (bookingId != null && bookingId.isNotEmpty) {
+          await prefs.setString('bookingId', bookingId);
+          // Update the GetX controller
+          print('notification from web was tiggred');
+          CabHomeController controller = Get.find();
+          controller.updateBookingId(bookingId);
+          // Fetch hospital data and set up real-time listening
+          await controller.getHospitalInfo(bookingId);
+          controller
+              .listenToBookingChanges(bookingId); // Start listening to changes
           display(message);
         }
       }
@@ -156,13 +162,12 @@ class NotificationService {
     log('Got a message whilst in the foreground!');
     // Map<String, dynamic> datas = jsonDecode(message.data);
     log('Message data: ${message.notification!.body}');
-    SharedPreferences reference = await SharedPreferences.getInstance();
 
-    await reference.setString("inprogressId", message.data["rides_id"]);
-    print(
-        "finalrideuuid${reference.setString("inprogressId", message.data["rides_id"])}");
+    // await reference.setString("inprogressId", message.data["rides_id"]);
+    // print(
+    //     "finalrideuuid${reference.setString("inprogressId", message.data["rides_id"])}");
 
-    log('Message data: ${message.data["rides_id"]}');
+    log('Message data: ${message.data["rides_id"] ?? message.data['booking_id']}');
     try {
       AndroidNotificationChannel channel = const AndroidNotificationChannel(
         "01",
@@ -193,6 +198,7 @@ class NotificationService {
       log(e.toString());
     }
   }
+}
 
   // void display(RemoteMessage message) async {
   //   log('Got a message whilst in the foreground!');
@@ -245,4 +251,3 @@ class NotificationService {
   //     log(e.toString());
   //   }
   // }
-}

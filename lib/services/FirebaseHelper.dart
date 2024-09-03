@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -27,6 +28,7 @@ import 'package:emartdriver/model/VehicleType.dart';
 import 'package:emartdriver/model/VendorModel.dart';
 import 'package:emartdriver/model/conversation_model.dart';
 import 'package:emartdriver/model/email_template_model.dart';
+import 'package:emartdriver/model/hospital_model.dart';
 import 'package:emartdriver/model/inbox_model.dart';
 import 'package:emartdriver/model/notification_model.dart';
 import 'package:emartdriver/model/paypalSettingData.dart';
@@ -404,7 +406,42 @@ class FireStoreUtils {
     }
   }
 
-  ///
+  ///nirajan fetching hospital_booking dta
+  static Future<HospitalBooking?> fetchHospitalBooking(
+      String documentId) async {
+    try {
+      print('fetching booking');
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('hospital_booking')
+          .doc(documentId)
+          .get();
+
+      if (doc.exists) {
+        return HospitalBooking.fromDocument(doc);
+      } else {
+        print('Document does not exist');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching document: $e');
+      return null;
+    }
+  }
+
+//nirjan
+  Future<void> createHospitalBooking(
+      String documentId, HospitalBooking booking) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('hospital_booking')
+          .doc(documentId)
+          .set(booking.toMap());
+
+      print('Hospital booking created successfully!');
+    } catch (e) {
+      print('Error creating hospital booking: $e');
+    }
+  }
 
   static Future<CabOrderModel?> getCabOrderByOrderId(String orderID) async {
     DocumentSnapshot<Map<String, dynamic>> userDocument =
