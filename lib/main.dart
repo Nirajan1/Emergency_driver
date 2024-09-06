@@ -65,16 +65,7 @@ void main() async {
   await UserPreference.init();
 
   runApp(
-    EasyLocalization(
-        supportedLocales: const [Locale('en'), Locale('ar')],
-        path: 'assets/translations',
-        fallbackLocale: sp.getString('languageCode') != null
-            ? Locale(sp.getString('languageCode')!)
-            : Locale('en'),
-        saveLocale: true,
-        useOnlyLangCode: true,
-        useFallbackTranslations: true,
-        child: MyApp()),
+    EasyLocalization(supportedLocales: const [Locale('en'), Locale('ar')], path: 'assets/translations', fallbackLocale: sp.getString('languageCode') != null ? Locale(sp.getString('languageCode')!) : Locale('en'), saveLocale: true, useOnlyLangCode: true, useFallbackTranslations: true, child: MyApp()),
   );
 }
 
@@ -86,8 +77,7 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   /// this key is used to navigate to the appropriate screen when the
   /// notification is clicked from the system tray
-  final GlobalKey<NavigatorState> navigatorKey =
-      GlobalKey(debugLabel: 'Main Navigator');
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: 'Main Navigator');
 
   static User? currentUser;
 
@@ -99,8 +89,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         String token = await NotificationService.getToken();
         log(":::::::TOKEN:::::: $token");
         if (currentUser != null) {
-          await FireStoreUtils.getCurrentUser(currentUser!.userID)
-              .then((value) {
+          await FireStoreUtils.getCurrentUser(currentUser!.userID).then((value) {
             if (value != null) {
               currentUser = value;
               currentUser!.fcmToken = token;
@@ -115,50 +104,27 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // Define an async function to initialize FlutterFire
   void initializeFlutterFire() async {
     try {
-      await FirebaseFirestore.instance
-          .collection(Setting)
-          .doc("globalSettings")
-          .get()
-          .then((dineinresult) {
-        if (dineinresult.exists &&
-            dineinresult.data() != null &&
-            dineinresult.data()!.containsKey("website_color")) {
-          COLOR_PRIMARY = int.parse(
-              dineinresult.data()!["website_color"].replaceFirst("#", "0xff"));
+      await FirebaseFirestore.instance.collection(Setting).doc("globalSettings").get().then((dineinresult) {
+        if (dineinresult.exists && dineinresult.data() != null && dineinresult.data()!.containsKey("website_color")) {
+          COLOR_PRIMARY = int.parse(dineinresult.data()!["website_color"].replaceFirst("#", "0xff"));
         }
       });
 
-      await FirebaseFirestore.instance
-          .collection(Setting)
-          .doc("Version")
-          .get()
-          .then((value) {
+      await FirebaseFirestore.instance.collection(Setting).doc("Version").get().then((value) {
         print(value.data());
         appVersion = value.data()!['app_version'].toString();
       });
-      await FirebaseFirestore.instance
-          .collection(Setting)
-          .doc("emailSetting")
-          .get()
-          .then((value) {
+      await FirebaseFirestore.instance.collection(Setting).doc("emailSetting").get().then((value) {
         if (value.exists) {
           mailSettings = MailSettings.fromJson(value.data()!);
         }
       });
-      await FirebaseFirestore.instance
-          .collection(Setting)
-          .doc("googleMapKey")
-          .get()
-          .then((value) {
+      await FirebaseFirestore.instance.collection(Setting).doc("googleMapKey").get().then((value) {
         print(value.data());
         GOOGLE_API_KEY = value.data()!['key'].toString();
       });
 
-      await FirebaseFirestore.instance
-          .collection(Setting)
-          .doc("notification_setting")
-          .get()
-          .then((value) {
+      await FirebaseFirestore.instance.collection(Setting).doc("notification_setting").get().then((value) {
         print(value.data());
         senderId = value.data()!['senderId'].toString();
         jsonNotificationFileURL = value.data()!['serviceJson'].toString();
@@ -195,18 +161,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 actionsIconTheme: IconThemeData(color: Color(COLOR_PRIMARY)),
                 iconTheme: IconThemeData(color: Color(COLOR_PRIMARY)),
                 systemOverlayStyle: SystemUiOverlayStyle.dark,
-                toolbarTextStyle: TextTheme(
-                        titleLarge: TextStyle(
-                            color: Colors.black,
-                            fontSize: 17.0,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.w700))
-                    .bodyMedium,
-                titleTextStyle:
-                    TextTheme(titleLarge: TextStyle(color: Colors.black, fontSize: 17.0, letterSpacing: 0, fontWeight: FontWeight.w700))
-                        .titleLarge),
-            bottomSheetTheme:
-                BottomSheetThemeData(backgroundColor: Colors.white),
+                toolbarTextStyle: TextTheme(titleLarge: TextStyle(color: Colors.black, fontSize: 17.0, letterSpacing: 0, fontWeight: FontWeight.w700)).bodyMedium,
+                titleTextStyle: TextTheme(titleLarge: TextStyle(color: Colors.black, fontSize: 17.0, letterSpacing: 0, fontWeight: FontWeight.w700)).titleLarge),
+            bottomSheetTheme: BottomSheetThemeData(backgroundColor: Colors.white),
             primaryColor: Color(COLOR_PRIMARY),
             brightness: Brightness.light),
         darkTheme: ThemeData(
@@ -216,15 +173,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 elevation: 0,
                 actionsIconTheme: IconThemeData(color: Color(COLOR_PRIMARY)),
                 iconTheme: IconThemeData(color: Color(COLOR_PRIMARY)),
-                toolbarTextStyle: TextTheme(
-                        titleLarge: TextStyle(
-                            color: Colors.grey[200],
-                            fontSize: 17.0,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.w700))
-                    .bodyMedium,
-                titleTextStyle:
-                    TextTheme(titleLarge: TextStyle(color: Colors.grey[200], fontSize: 17.0, letterSpacing: 0, fontWeight: FontWeight.w700)).titleLarge,
+                toolbarTextStyle: TextTheme(titleLarge: TextStyle(color: Colors.grey[200], fontSize: 17.0, letterSpacing: 0, fontWeight: FontWeight.w700)).bodyMedium,
+                titleTextStyle: TextTheme(titleLarge: TextStyle(color: Colors.grey[200], fontSize: 17.0, letterSpacing: 0, fontWeight: FontWeight.w700)).titleLarge,
                 systemOverlayStyle: SystemUiOverlayStyle.light),
             bottomSheetTheme: BottomSheetThemeData(backgroundColor: Colors.grey.shade900),
             primaryColor: Color(COLOR_PRIMARY),
@@ -295,11 +245,11 @@ class OnBoardingState extends State<OnBoarding> {
       if (firebaseUser != null) {
         User? user = await FireStoreUtils.getCurrentUser(firebaseUser.uid);
         if (user != null && user.role == USER_ROLE_DRIVER) {
+          print('the whole user data is ${user}');
           if (user.active) {
             user.isActive = true;
             user.role = USER_ROLE_DRIVER;
-            user.fcmToken =
-                await FireStoreUtils.firebaseMessaging.getToken() ?? '';
+            user.fcmToken = await FireStoreUtils.firebaseMessaging.getToken() ?? '';
             await FireStoreUtils.updateCurrentUser(user);
             MyAppState.currentUser = user;
             if (user.serviceType == "cab-service") {
@@ -310,11 +260,9 @@ class OnBoardingState extends State<OnBoarding> {
                   ),
                   false);
             } else if (user.serviceType == "parcel_delivery") {
-              pushAndRemoveUntil(
-                  context, ParcelServiceDashBoard(user: user), false);
+              pushAndRemoveUntil(context, ParcelServiceDashBoard(user: user), false);
             } else if (user.serviceType == "rental-service") {
-              pushAndRemoveUntil(
-                  context, RentalServiceDashBoard(user: user), false);
+              pushAndRemoveUntil(context, RentalServiceDashBoard(user: user), false);
             } else {
               pushAndRemoveUntil(context, ContainerScreen(user: user), false);
             }
@@ -369,4 +317,4 @@ Future<dynamic> backgroundMessageHandler(RemoteMessage remoteMessage) async {
     // Handle notification message
   }
 }
-// flutter version 3.19.6
+// flutter version 3.22.2

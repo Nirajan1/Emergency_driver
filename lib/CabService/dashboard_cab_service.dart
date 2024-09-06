@@ -82,14 +82,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
       if (value != null) {
         currencyData = value;
       } else {
-        currencyData = CurrencyModel(
-            id: "",
-            code: "USD",
-            decimal: 2,
-            isactive: true,
-            name: "US Dollar",
-            symbol: "\$",
-            symbolatright: false);
+        currencyData = CurrencyModel(id: "", code: "USD", decimal: 2, isactive: true, name: "US Dollar", symbol: "\$", symbolatright: false);
       }
       setState(() {});
     });
@@ -111,13 +104,11 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
     PermissionStatus permissionStatus = await location.hasPermission();
     if (permissionStatus == PermissionStatus.granted) {
       location.enableBackgroundMode(enable: true);
-      location.changeSettings(
-          accuracy: LocationAccuracy.navigation, distanceFilter: 3);
+      location.changeSettings(accuracy: LocationAccuracy.navigation, distanceFilter: 3);
       locationDataFinal = await location.getLocation();
       location.onLocationChanged.listen((locationData) async {
         locationDataFinal = locationData;
-        await FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID)
-            .then((value) {
+        await FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID).then((value) {
           if (value != null) {
             User driverUserModel = value;
             if (driverUserModel.isActive == true) {
@@ -139,12 +130,10 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
       await location.requestPermission().then((permissionStatus) {
         if (permissionStatus == PermissionStatus.granted) {
           location.enableBackgroundMode(enable: true);
-          location.changeSettings(
-              accuracy: LocationAccuracy.navigation, distanceFilter: 3);
+          location.changeSettings(accuracy: LocationAccuracy.navigation, distanceFilter: 3);
           location.onLocationChanged.listen((locationData) async {
             locationDataFinal = locationData;
-            await FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID)
-                .then((value) {
+            await FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID).then((value) {
               if (value != null) {
                 User driverUserModel = value;
                 if (driverUserModel.isActive == true) {
@@ -172,8 +161,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16.0))),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16.0))),
           contentPadding: EdgeInsets.only(top: 10.0),
           content: Container(
             //width: 300.0,
@@ -184,20 +172,15 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Padding(
-                  padding:
-                      const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
+                  padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
                   child: Text(
                     "Background Location permission".tr(),
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(
-                      left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
-                  child: Text(
-                      "This app collects location data to enable location fetching at the time of you are on the way to deliver order or even when the app is in background."
-                          .tr()),
+                  padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
+                  child: Text("This app collects location data to enable location fetching at the time of you are on the way to deliver order or even when the app is in background.".tr()),
                 ),
                 InkWell(
                   onTap: () {
@@ -207,9 +190,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                     padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
                     decoration: BoxDecoration(
                       color: Colors.red,
-                      borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(16.0),
-                          bottomRight: Radius.circular(16.0)),
+                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(16.0), bottomRight: Radius.circular(16.0)),
                     ),
                     child: Text(
                       "Okay",
@@ -298,25 +279,21 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                                     //       style: TextStyle(color: Colors.white),
                                     //     )),
                                     SwitchListTile(
-                                      visualDensity: VisualDensity(
-                                          horizontal: 0, vertical: -4),
+                                      visualDensity: VisualDensity(horizontal: 0, vertical: -4),
                                       contentPadding: EdgeInsets.zero,
                                       title: Text(
-                                        "Online".tr(),
+                                        MyAppState.currentUser!.isActive ? "Online" : "Offline",
                                         style: TextStyle(color: Colors.white),
                                       ),
                                       value: MyAppState.currentUser!.isActive,
                                       onChanged: (value) {
                                         setState(() {
-                                          MyAppState.currentUser!.isActive =
-                                              value;
+                                          MyAppState.currentUser!.isActive = value;
                                         });
-                                        if (MyAppState.currentUser!.isActive ==
-                                            true) {
+                                        if (MyAppState.currentUser!.isActive == true) {
                                           updateCurrentLocation();
                                         }
-                                        print(
-                                            ' is active ${MyAppState.currentUser!.isActive}');
+                                        print(' is active ${MyAppState.currentUser!.isActive}');
                                         FireStoreUtils.updateCurrentUser(
                                           MyAppState.currentUser!,
                                         );
@@ -333,8 +310,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected:
-                                    _drawerSelection == DrawerSelection.Home,
+                                selected: _drawerSelection == DrawerSelection.Home,
                                 title: Text('Home').tr(),
                                 onTap: () {
                                   // if (MyAppState.currentUser!.isCompany) {
@@ -364,16 +340,14 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected:
-                                    _drawerSelection == DrawerSelection.Orders,
+                                selected: _drawerSelection == DrawerSelection.Orders,
                                 leading: Image.asset(
                                   'assets/images/truck.png',
-                                  color:
-                                      _drawerSelection == DrawerSelection.Orders
-                                          ? Color(COLOR_PRIMARY)
-                                          : isDarkMode(context)
-                                              ? Colors.grey.shade200
-                                              : Colors.grey.shade600,
+                                  color: _drawerSelection == DrawerSelection.Orders
+                                      ? Color(COLOR_PRIMARY)
+                                      : isDarkMode(context)
+                                          ? Colors.grey.shade200
+                                          : Colors.grey.shade600,
                                   width: 24,
                                   height: 24,
                                 ),
@@ -392,10 +366,8 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected:
-                                    _drawerSelection == DrawerSelection.Wallet,
-                                leading:
-                                    Icon(Icons.account_balance_wallet_sharp),
+                                selected: _drawerSelection == DrawerSelection.Wallet,
+                                leading: Icon(Icons.account_balance_wallet_sharp),
                                 title: Text('Wallet').tr(),
                                 onTap: () {
                                   Navigator.pop(context);
@@ -411,8 +383,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected: _drawerSelection ==
-                                    DrawerSelection.BankInfo,
+                                selected: _drawerSelection == DrawerSelection.BankInfo,
                                 leading: Icon(Icons.account_balance),
                                 title: Text('Bank Details').tr(),
                                 onTap: () {
@@ -429,15 +400,13 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected: _drawerSelection ==
-                                    DrawerSelection.rideSetting,
+                                selected: _drawerSelection == DrawerSelection.rideSetting,
                                 leading: Icon(CupertinoIcons.settings),
                                 title: Text('Settings').tr(),
                                 onTap: () {
                                   Navigator.pop(context);
                                   setState(() {
-                                    _drawerSelection =
-                                        DrawerSelection.rideSetting;
+                                    _drawerSelection = DrawerSelection.rideSetting;
                                     _appBarTitle = 'Settings'.tr();
                                     _currentWidget = RideSettingScreen();
                                   });
@@ -448,8 +417,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected:
-                                    _drawerSelection == DrawerSelection.Profile,
+                                selected: _drawerSelection == DrawerSelection.Profile,
                                 leading: Icon(CupertinoIcons.person),
                                 title: Text('Profile').tr(),
                                 onTap: () {
@@ -468,12 +436,10 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected: _drawerSelection ==
-                                    DrawerSelection.chooseLanguage,
+                                selected: _drawerSelection == DrawerSelection.chooseLanguage,
                                 leading: Icon(
                                   Icons.language,
-                                  color: _drawerSelection ==
-                                          DrawerSelection.chooseLanguage
+                                  color: _drawerSelection == DrawerSelection.chooseLanguage
                                       ? Color(COLOR_PRIMARY)
                                       : isDarkMode(context)
                                           ? Colors.grey.shade200
@@ -483,8 +449,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                                 onTap: () {
                                   Navigator.pop(context);
                                   setState(() {
-                                    _drawerSelection =
-                                        DrawerSelection.chooseLanguage;
+                                    _drawerSelection = DrawerSelection.chooseLanguage;
                                     _appBarTitle = 'Language'.tr();
                                     _currentWidget = LanguageChooseScreen(
                                       isContainer: true,
@@ -497,8 +462,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected: _drawerSelection ==
-                                    DrawerSelection.termsCondition,
+                                selected: _drawerSelection == DrawerSelection.termsCondition,
                                 leading: const Icon(Icons.policy),
                                 title: const Text('Terms and Condition').tr(),
                                 onTap: () async {
@@ -510,8 +474,7 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected: _drawerSelection ==
-                                    DrawerSelection.privacyPolicy,
+                                selected: _drawerSelection == DrawerSelection.privacyPolicy,
                                 leading: const Icon(Icons.privacy_tip),
                                 title: const Text('Privacy policy').tr(),
                                 onTap: () async {
@@ -523,10 +486,8 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected:
-                                    _drawerSelection == DrawerSelection.inbox,
-                                leading:
-                                    Icon(CupertinoIcons.chat_bubble_2_fill),
+                                selected: _drawerSelection == DrawerSelection.inbox,
+                                leading: Icon(CupertinoIcons.chat_bubble_2_fill),
                                 title: Text('Inbox').tr(),
                                 onTap: () {
                                   if (MyAppState.currentUser == null) {
@@ -547,27 +508,21 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                               style: ListTileStyle.drawer,
                               selectedColor: Color(COLOR_PRIMARY),
                               child: ListTile(
-                                selected:
-                                    _drawerSelection == DrawerSelection.Logout,
+                                selected: _drawerSelection == DrawerSelection.Logout,
                                 leading: Icon(Icons.logout),
                                 title: Text('Log out').tr(),
                                 onTap: () async {
                                   Navigator.pop(context);
-                                  await FireStoreUtils.getCurrentUser(
-                                          MyAppState.currentUser!.userID)
-                                      .then((value) {
+                                  await FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID).then((value) {
                                     MyAppState.currentUser = value;
                                   });
                                   MyAppState.currentUser!.isActive = false;
-                                  MyAppState.currentUser!.lastOnlineTimestamp =
-                                      Timestamp.now();
-                                  await FireStoreUtils.updateCurrentUser(
-                                      MyAppState.currentUser!);
+                                  MyAppState.currentUser!.lastOnlineTimestamp = Timestamp.now();
+                                  await FireStoreUtils.updateCurrentUser(MyAppState.currentUser!);
                                   await auth.FirebaseAuth.instance.signOut();
                                   MyAppState.currentUser = null;
                                   location.enableBackgroundMode(enable: false);
-                                  pushAndRemoveUntil(
-                                      context, AuthScreen(), false);
+                                  pushAndRemoveUntil(context, AuthScreen(), false);
                                 },
                               ),
                             ),
@@ -583,13 +538,10 @@ class _DashBoardCabServiceState extends State<DashBoardCabService> {
                 ),
                 appBar: AppBar(
                   iconTheme: IconThemeData(
-                    color:
-                        isDarkMode(context) ? Colors.white : Color(DARK_COLOR),
+                    color: isDarkMode(context) ? Colors.white : Color(DARK_COLOR),
                   ),
-                  centerTitle:
-                      _drawerSelection == DrawerSelection.Wallet ? true : false,
-                  backgroundColor:
-                      isDarkMode(context) ? Color(DARK_COLOR) : Colors.white,
+                  centerTitle: _drawerSelection == DrawerSelection.Wallet ? true : false,
+                  backgroundColor: isDarkMode(context) ? Color(DARK_COLOR) : Colors.white,
                   title: Text(
                     _appBarTitle,
                     style: TextStyle(
