@@ -60,7 +60,7 @@ class User with ChangeNotifier {
   String vehicleType;
   String vehicleId;
   String carMakes;
-  // bool isCompany;
+  int isBusy;
   // String companyId;
   // String companyName;
   // String companyAddress;
@@ -104,7 +104,7 @@ class User with ChangeNotifier {
       this.vehicleType = "",
       this.vehicleId = "",
       this.carMakes = "",
-      // this.isCompany = false,
+      this.isBusy = 0,
       // this.companyId = "",
       // this.companyName = "",
       // this.companyAddress = "",
@@ -187,7 +187,7 @@ class User with ChangeNotifier {
         carName: parsedJson['carName'] ?? '',
         carNumber: parsedJson['carNumber'] ?? '',
         carColor: parsedJson['carColor'] ?? '',
-        // isCompany: parsedJson['isCompany'] ?? false,
+        isBusy: parsedJson['isBusy'] ?? 0,
         // companyId: parsedJson['companyId'] ?? '',
         // companyName: parsedJson['companyName'] ?? '',
         // companyAddress: parsedJson['companyAddress'] ?? '',
@@ -199,8 +199,7 @@ class User with ChangeNotifier {
         createdAt: parsedJson['createdAt'],
         orderRequestData: parsedJson.containsKey('orderRequestData') && parsedJson['orderRequestData'] != null ? OrderModel.fromJson(parsedJson['orderRequestData']) : null,
         ordercabRequestData: parsedJson.containsKey('ordercabRequestData') && parsedJson['ordercabRequestData'] != null ? CabOrderModel.fromJson(parsedJson['ordercabRequestData']) : null,
-        orderParcelRequestData:
-            parsedJson.containsKey('orderParcelRequestData') && parsedJson['orderParcelRequestData'] != null ? ParcelOrderModel.fromJson(parsedJson['orderParcelRequestData']) : null);
+        orderParcelRequestData: parsedJson.containsKey('orderParcelRequestData') && parsedJson['orderParcelRequestData'] != null ? ParcelOrderModel.fromJson(parsedJson['orderParcelRequestData']) : null);
   }
 
   factory User.fromPayload(Map<String, dynamic> parsedJson) {
@@ -246,7 +245,7 @@ class User with ChangeNotifier {
         vehicleType: parsedJson['vehicleType'] ?? '',
         vehicleId: parsedJson['vehicleId'] ?? '',
         carMakes: parsedJson['carMakes'] ?? '',
-        // isCompany: parsedJson['isCompany'] ?? false,
+        isBusy: parsedJson['isBusy'] ?? 0,
         // companyId: parsedJson['companyId'] ?? '',
         // companyName: parsedJson['companyName'] ?? '',
         // companyAddress: parsedJson['companyAddress'] ?? '',
@@ -261,8 +260,7 @@ class User with ChangeNotifier {
         carInfo: parsedJson.containsKey('carInfo') ? CarInfo.fromJson(parsedJson['carInfo']) : CarInfo(),
         orderRequestData: parsedJson.containsKey('orderRequestData') && parsedJson['orderRequestData'] != null ? OrderModel.fromJson(parsedJson['orderRequestData']) : null,
         ordercabRequestData: parsedJson.containsKey('ordercabRequestData') && parsedJson['ordercabRequestData'] != null ? CabOrderModel.fromJson(parsedJson['ordercabRequestData']) : null,
-        orderParcelRequestData:
-            parsedJson.containsKey('orderParcelRequestData') && parsedJson['orderParcelRequestData'] != null ? ParcelOrderModel.fromJson(parsedJson['orderParcelRequestData']) : null);
+        orderParcelRequestData: parsedJson.containsKey('orderParcelRequestData') && parsedJson['orderParcelRequestData'] != null ? ParcelOrderModel.fromJson(parsedJson['orderParcelRequestData']) : null);
   }
 
   Map<String, dynamic> toJson() {
@@ -302,7 +300,7 @@ class User with ChangeNotifier {
         'rotation': this.rotation,
         'reviewsCount': this.reviewsCount,
         'reviewsSum': this.reviewsSum,
-        // 'isCompany': this.isCompany,
+        'isBusy': this.isBusy,
         // 'companyId': this.companyId,
         // 'companyName': this.companyName,
         // 'companyAddress': this.companyAddress,
@@ -359,7 +357,7 @@ class User with ChangeNotifier {
         'rotation': this.rotation,
         'reviewsCount': this.reviewsCount,
         'reviewsSum': this.reviewsSum,
-        // 'isCompany': this.isCompany,
+        'isBusy': this.isBusy,
         // 'companyId': this.companyId,
         // 'companyName': this.companyName,
         // 'companyAddress': this.companyAddress,
