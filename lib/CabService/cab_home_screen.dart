@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:emartdriver/CabService/verify_otp_screen.dart';
 import 'package:emartdriver/constants.dart';
 import 'package:emartdriver/controller/notification_pref.dart';
@@ -39,6 +38,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
   final CabHomeController cabHomecontroller = Get.put(CabHomeController());
 
   GoogleMapController? _mapController;
+
   bool canShowSheet = true;
 
   BitmapDescriptor? departureIcon;
@@ -96,6 +96,8 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
     });
   }
 
+  var latitude;
+  var longitude;
   AnimationController? _animationController;
   @override
   void initState() {
@@ -112,32 +114,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
 
     _animationController = new AnimationController(vsync: this, duration: Duration(milliseconds: 700));
     _animationController!.repeat(reverse: true);
-
-    // Future.delayed(const Duration(seconds: 3), () async {
-    //   SharedPreferences preferences = await SharedPreferences.getInstance();
-
-    //   if (preferences.getString('inprogressId') == null) {
-    //     ridesId.value = '';
-    //     print('inside if is called');
-    //   } else {
-    //     print('inside else is called');
-    //     ridesId.value = await preferences.getString('inprogressId').toString();
-    //   }
-    // });
   }
-
-  // Future<void> getRidesInfo(String ridesId) async {
-  //   // First, perform the asynchronous operation.
-  //   print('newRidesData is called');
-  //   try {
-  //     cabHomecontroller.isLoading.value = true;
-  //     newRidesData = await FireStoreUtils.getRideData(ridesId);
-  //   } catch (exception) {
-  //     debugPrint('error in fetching getRidesInfo ${exception}');
-  //   } finally {
-  //     cabHomecontroller.isLoading.value = false;
-  //   }
-  // }
 
   Future<void> deletePreference() async {
     SharedPreferences ref = await SharedPreferences.getInstance();
@@ -163,21 +140,11 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool isShow = false;
+  Completer<GoogleMapController> _controller = Completer();
 
   @override
   Widget build(BuildContext context) {
-    // isShow = false;
-    // deletereference();
-    // if (cabHomecontroller.ridesId.value.isNotEmpty) {
-    //   getRidesInfo(cabHomecontroller.ridesId.value);
-    // } else {
-    //   print('cabHomeContoller rides Id is empty');
-    // }
-    // print(
-    //     '_driverModel!.location.latitude ${cabHomecontroller.newHospitalData!.location.latitude}');
     if (cabHomecontroller.bookingId.value.isNotEmpty) print('booking id ${cabHomecontroller.bookingId}');
-    // print('booking id ${cabHomecontroller.newRidesData!.status}');
-    // FireStoreUtils.fetchHospitalBooking(cabHomecontroller.bookingId.value);
     isDarkMode(context)
         ? _mapController?.setMapStyle('[{"featureType": "all","'
             'elementType": "'
@@ -185,56 +152,34 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
             'met'
             'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]')
         : _mapController?.setMapStyle(null);
-    // print(
-    //     '_driverModel!.ordercabRequestData ${_driverModel!.ordercabRequestData}');
-    // print(
-    //     ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
-
-    // print(
-    //     ' _driverModel!.inProgressOrderID  ${_driverModel!.inProgressOrderID}');
 
     return Scaffold(
       key: _scaffoldKey,
       body: Column(
         children: [
-          // Visibility(
-          //   visible: _driverModel!.inProgressOrderID == null &&
-          //       double.parse(_driverModel!.walletAmount.toString()) <
-          //           double.parse(minimumDepositToRideAccept),
-          //   child: Align(
-          //     alignment: Alignment.topCenter,
-          //     child: Container(
-          //       color: Colors.black,
-          //       child: Padding(
-          //         padding: const EdgeInsets.all(8.0),
-          //         child: Text(
-          //             "${"You have to minimum "}${amountShow(amount: minimumDepositToRideAccept.toString())} ${"wallet amount to receiving Order"}",
-          //             style: TextStyle(color: Colors.white),
-          //             textAlign: TextAlign.center),
-          //       ),
-          //     ),
-          //   ),
-          // ),
-          Expanded(
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              myLocationEnabled: _driverModel!.inProgressOrderID != null ? false : true,
-              myLocationButtonEnabled: true,
-              mapType: MapType.terrain,
-              zoomControlsEnabled: false,
-              polylines: Set<Polyline>.of(polyLines.values),
-              markers: _markers.values.toSet(),
-              initialCameraPosition: CameraPosition(
-                zoom: 15,
-                target: LatLng(
-                  _driverModel!.location.latitude,
-                  _driverModel!.location.longitude,
-                  // 26.475551,
-                  // 87.276717,
+          latitude == null && longitude == null
+              ? SizedBox()
+              : Expanded(
+                  child: GoogleMap(
+                    onMapCreated: _onMapCreated,
+                    myLocationEnabled: _driverModel!.inProgressOrderID != null ? false : true,
+                    mapToolbarEnabled: true,
+                    mapType: MapType.terrain,
+                    zoomControlsEnabled: true,
+                    polylines: Set<Polyline>.of(polyLines.values),
+                    markers: _markers.values.toSet(),
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        latitude,
+                        longitude,
+                        // 26.475551,
+                        // 87.276717,
+                      ),
+                      zoom: 15.0,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
+
           _driverModel!.inProgressOrderID != null && currentOrder != null && isShow == true ? buildOrderActionsCard() : Container(),
 
           // show accept reject  button for web and from app
@@ -404,6 +349,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
                             newBooking,
                           );
                           _driverModel!.inProgressOrderID = null;
+                          _driverModel!.isBusy = 0;
                           _driverModel!.location = UserLocation(
                             latitude: locationData.latitude,
                             longitude: locationData.longitude,
@@ -483,6 +429,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    print('location data final $locationDataFinal');
     if (locationDataFinal != null) {
       controller.animateCamera(
         CameraUpdate.newCameraPosition(
@@ -504,32 +451,15 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
       controller.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            target: LatLng(0.0, 0.0), // Default to a neutral location
+            target: LatLng(
+              MyAppState.currentUser!.location.latitude,
+              MyAppState.currentUser!.location.longitude,
+            ), // Default to a neutral location
             zoom: 14,
           ),
         ),
       );
     }
-    // controller.animateCamera(
-    //   CameraUpdate.newCameraPosition(
-    //     CameraPosition(
-    //       target: LatLng(
-    //         locationDataFinal!.latitude ?? 0.0,
-    //         locationDataFinal!.longitude ?? 0.0,
-    //         // 26.4525,
-    //         // 87.2718,
-    //       ),
-    //       zoom: 14,
-    //     ),
-    //   ),
-    // );
-    setState(() {});
-    if (isDarkMode(context))
-      _mapController?.setMapStyle('[{"featureType": "all","'
-          'elementType": "'
-          'geo'
-          'met'
-          'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]');
   }
 
 //? when order comes from app  this is triggred
@@ -838,45 +768,41 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
             const SizedBox(
               height: 4,
             ),
-            cabHomecontroller.newHospitalData!.bookingType == 'one_time'
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          "Booking Type",
-                          style: TextStyle(color: Color(0xffADADAD), fontFamily: "Poppinsr", letterSpacing: 0.5),
-                        ),
-                      ),
-                      Text(
-                        "${cabHomecontroller.newHospitalData!.bookingType} ",
-                        style: TextStyle(color: Color(0xffFFFFFF), fontFamily: "Poppinsm", letterSpacing: 0.5),
-                      ),
-                    ],
-                  )
-                : const SizedBox(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Text(
+                    "Booking Type",
+                    style: TextStyle(color: Color(0xffADADAD), fontFamily: "Poppinsr", letterSpacing: 0.5),
+                  ),
+                ),
+                Text(
+                  "${cabHomecontroller.newHospitalData!.bookingType} ",
+                  style: TextStyle(color: Color(0xffFFFFFF), fontFamily: "Poppinsm", letterSpacing: 0.5),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Text(
+                    "Booking Id",
+                    style: TextStyle(color: Color(0xffADADAD), fontFamily: "Poppinsr", letterSpacing: 0.5),
+                  ),
+                ),
+                Text(
+                  "${cabHomecontroller.bookingId} ",
+                  style: TextStyle(color: Color(0xffFFFFFF), fontFamily: "Poppinsm", letterSpacing: 0.5),
+                ),
+              ],
+            ),
 
-            cabHomecontroller.newHospitalData!.bookingType == 'one_time'
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          "Booking Id",
-                          style: TextStyle(color: Color(0xffADADAD), fontFamily: "Poppinsr", letterSpacing: 0.5),
-                        ),
-                      ),
-                      Text(
-                        "${cabHomecontroller.bookingId} ",
-                        style: TextStyle(color: Color(0xffFFFFFF), fontFamily: "Poppinsm", letterSpacing: 0.5),
-                      ),
-                    ],
-                  )
-                : const SizedBox(),
-            if (cabHomecontroller.newHospitalData!.bookingType == 'one_time')
-              const SizedBox(
-                height: 10,
-              ),
+            const SizedBox(
+              height: 10,
+            ),
+
             // accept and reject ride
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1032,6 +958,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
 
     // _driverModel!.ordercabRequestData = null;
     _driverModel!.inProgressOrderID = cabHomecontroller.newRidesData!.id;
+    _driverModel!.isBusy = 1;
     print(
       "in accept process : ${_driverModel!.inProgressOrderID}",
     );
@@ -1073,6 +1000,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
     cabHomecontroller.newRidesData!.status = ORDER_STATUS_DRIVER_REJECTED;
     await FireStoreUtils.updateCabOrder(cabHomecontroller.newRidesData!);
     _driverModel!.ordercabRequestData = null;
+    _driverModel!.isBusy = 0;
     deletePreference();
     await FireStoreUtils.updateCurrentUser(_driverModel!);
   }
@@ -1082,13 +1010,18 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
     // CabOrderModel orderModel = _driverModel!.ordercabRequestData!;
     // _driverModel!.ordercabRequestData = null;
     _driverModel!.inProgressOrderID = cabHomecontroller.newHospitalData!.hospitalId;
+    _driverModel!.isBusy = 1;
     print(
       "in accept process : ${_driverModel!.inProgressOrderID}",
     );
     await FireStoreUtils.updateCurrentUser(_driverModel!);
 
     HospitalBooking newBooking = HospitalBooking(
-      bookingType: cabHomecontroller.newHospitalData!.bookingType == 'hospitl' ? 'hospital' : 'one_time',
+      bookingType: cabHomecontroller.newHospitalData!.bookingType == 'hospital'
+          ? 'hospital'
+          : cabHomecontroller.newHospitalData!.bookingType == 'one_time'
+              ? 'one_time'
+              : 'manual',
       createdAt: DateTime.now(),
       hospitalId: cabHomecontroller.newHospitalData!.hospitalId,
       hospitalLatitude: cabHomecontroller.newHospitalData!.hospitalLatitude,
@@ -1127,13 +1060,13 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
       _timer!.cancel();
     }
     _driverModel!.ordercabRequestData = null;
-    _driverModel!.ordercabRequestData = null;
+    _driverModel!.isBusy = 0;
     deletePreference();
     await FireStoreUtils.updateCurrentUser(_driverModel!);
   }
 
   getDirections() async {
-    // the order is 333 222 33333 when accepted 3 and when picked 2 and when riched destination 3
+    // the order is 3 2 3 when accepted 3 and when picked 2 and when riched destination 3
     if (currentOrder != null) {
       if (currentOrder!.status == ORDER_STATUS_SHIPPED) {
         print('here is printed 1');
@@ -1297,9 +1230,6 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
   }
 
   getDirectionsWeb() async {
-    print('get direction was called');
-    print('get direction was called ${cabHomecontroller.showWebSecondPolyLine.value}');
-    print('get direction was called ${cabHomecontroller.showWebThirdPolyLine.value}');
     if (cabHomecontroller.showWebSecondPolyLine.value == true) {
       print('second called');
       List<LatLng> polylineCoordinates = [];
@@ -1531,15 +1461,12 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
         print('currentOrderis${currentOrder}');
 
         getDirections();
+        getDirectionsWeb();
       });
     });
   }
 
   getDriver() async {
-    // SharedPreferences reference = await SharedPreferences.getInstance();
-    // var ridesId = await reference.getString("inprogressId");
-    // print("ridefinalidis$ridesId");
-
     driverStream = FireStoreUtils().getDriver(MyAppState.currentUser!.userID);
     driverStream.listen((event) {
       print("get driver event--->${event.location.latitude} ${event.location.longitude}");
@@ -1550,11 +1477,16 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
       setState(
         () => _driverModel = event,
       );
+      setState(() {
+        latitude = event.location.latitude;
+        longitude = event.location.longitude;
+      });
       setState(
         () => MyAppState.currentUser = _driverModel,
       );
 
       getDirections();
+      getDirectionsWeb();
       print('isActive ${_driverModel!.isActive}');
       if (_driverModel!.isActive) {
         if (_driverModel!.ordercabRequestData != null) {
@@ -2016,6 +1948,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> with SingleTickerProvider
       }
     });
     _driverModel!.inProgressOrderID = null;
+    _driverModel!.isBusy = 0;
     _driverModel!.location = UserLocation(
       latitude: locationData.latitude,
       longitude: locationData.longitude,

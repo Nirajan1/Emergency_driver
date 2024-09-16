@@ -431,7 +431,7 @@ class FireStoreUtils {
 
   static Future<User?> updateCurrentUser(User user) async {
     return await firestore.collection(USERS).doc(user.userID).set(user.toJson()).then((document) {
-      print('user data ${user}');
+      print('update user data ${user.inProgressOrderID}');
       return user;
     });
   }
@@ -1334,7 +1334,7 @@ class FireStoreUtils {
     cabOrdersStreamSub = firestore.collection(RIDESORDER).doc(inProgressOrderID).snapshots().listen((onData) async {
       if (onData.data() != null) {
         CabOrderModel? orderModel = CabOrderModel.fromJson(onData.data()!);
-        print("ordermodelll${orderModel}");
+        print("orderModel${orderModel}");
         cabOrdersStreamController.sink.add(orderModel);
       }
     });

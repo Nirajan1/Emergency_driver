@@ -14,13 +14,11 @@ Future<void> firebaseMessageBackgroundHandle(RemoteMessage message) async {
 }
 
 class NotificationService {
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   initInfo() async {
-    await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,
       sound: true,
@@ -35,20 +33,14 @@ class NotificationService {
       sound: true,
     );
 
-    if (request.authorizationStatus == AuthorizationStatus.authorized ||
-        request.authorizationStatus == AuthorizationStatus.provisional) {
-      const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+    if (request.authorizationStatus == AuthorizationStatus.authorized || request.authorizationStatus == AuthorizationStatus.provisional) {
+      const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
       var iosInitializationSettings = const DarwinInitializationSettings();
-      final InitializationSettings initializationSettings =
-          InitializationSettings(
-              android: initializationSettingsAndroid,
-              iOS: iosInitializationSettings);
+      final InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: iosInitializationSettings);
 
       await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
-        onDidReceiveNotificationResponse:
-            (NotificationResponse notificationResponse) async {
+        onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
           handleNotificationTap(notificationResponse);
         },
       );
@@ -57,8 +49,7 @@ class NotificationService {
   }
 
   Future<void> setupInteractedMessage() async {
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       handleNotificationTap(NotificationResponse(
         payload: jsonEncode(initialMessage.data),
@@ -73,6 +64,9 @@ class NotificationService {
         String? ridesId = message.data["rides_id"];
         String? bookingId = message.data["booking_id"];
         if (ridesId != null && ridesId.isNotEmpty) {
+          if (bookingId != null) {
+            prefs.remove('bookingId');
+          }
           await prefs.setString("inprogressId", ridesId);
           // log(message.notification.toString());
 
@@ -84,6 +78,9 @@ class NotificationService {
           controller.listenToRideChanges(ridesId);
           display(message);
         } else if (bookingId != null && bookingId.isNotEmpty) {
+          if (ridesId != null) {
+            prefs.remove('inprogressId');
+          }
           await prefs.setString('bookingId', bookingId);
           // Update the GetX controller
           print('notification from web was tiggred');
@@ -91,8 +88,7 @@ class NotificationService {
           controller.updateBookingId(bookingId);
           // Fetch hospital data and set up real-time listening
           await controller.getHospitalInfo(bookingId);
-          controller
-              .listenToBookingChanges(bookingId); // Start listening to changes
+          controller.listenToBookingChanges(bookingId); // Start listening to changes
           display(message);
         }
       }
@@ -104,8 +100,7 @@ class NotificationService {
         log(message.notification.toString());
         handleNotificationTap(NotificationResponse(
           payload: jsonEncode(message.data),
-          notificationResponseType:
-              NotificationResponseType.selectedNotification,
+          notificationResponseType: NotificationResponseType.selectedNotification,
         ));
       }
     });
@@ -175,17 +170,9 @@ class NotificationService {
         description: 'Show Emart Notification',
         importance: Importance.max,
       );
-      AndroidNotificationDetails notificationDetails =
-          AndroidNotificationDetails(channel.id, channel.name,
-              channelDescription: 'your channel Description',
-              importance: Importance.high,
-              priority: Priority.high,
-              ticker: 'ticker');
-      const DarwinNotificationDetails darwinNotificationDetails =
-          DarwinNotificationDetails(
-              presentAlert: true, presentBadge: true, presentSound: true);
-      NotificationDetails notificationDetailsBoth = NotificationDetails(
-          android: notificationDetails, iOS: darwinNotificationDetails);
+      AndroidNotificationDetails notificationDetails = AndroidNotificationDetails(channel.id, channel.name, channelDescription: 'your channel Description', importance: Importance.high, priority: Priority.high, ticker: 'ticker');
+      const DarwinNotificationDetails darwinNotificationDetails = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
+      NotificationDetails notificationDetailsBoth = NotificationDetails(android: notificationDetails, iOS: darwinNotificationDetails);
       await flutterLocalNotificationsPlugin.show(
         0,
         message.notification!.title,
